@@ -1,0 +1,10 @@
+{
+  "description": "Showcase your design business with a professional portfolio website that highlights your work, attracts clients, and enhances your online presence.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
