@@ -1,781 +1,506 @@
 import { useState, useId } from "react";
+import heroCreativeImg from "./assets/hero-creative.jpg";
+import mobileTabletImg from "./assets/mobile-tablet-ui.jpg";
+import desktopWorkspaceImg from "./assets/desktop-workspace-ui.jpg";
+import laptopMegaphoneImg from "./assets/laptop-megaphone-marketing.jpg";
 
-// Theme Definitions
-type ThemeId = "warm" | "cyber" | "clean" | "luxury";
+// View mode switcher: Unified, Template 1 (Agency), Template 2 (Marketing)
+type ViewMode = "unified" | "agency" | "marketing";
 
-interface ThemeStyle {
-  id: ThemeId;
-  name: string;
-  icon: string;
-  badge: string;
-  pageBg: string;
-  gridClass: string;
-  textPrimary: string;
-  textMuted: string;
-  navBg: string;
-  navBorder: string;
-  cardBg: string;
-  cardBorder: string;
-  cardHoverBorder: string;
-  accentPrimary: string;
-  accentPrimaryBg: string;
-  accentPrimaryText: string;
-  accentSecondary: string;
-  contrastBlockBg: string;
-  contrastBlockText: string;
-  heroGradient: string;
-  headingFont: string;
-  isDark: boolean;
-}
-
-const THEMES: Record<ThemeId, ThemeStyle> = {
-  warm: {
-    id: "warm",
-    name: "Warm Studio",
-    icon: "🌾",
-    badge: "Editorial & Warm",
-    pageBg: "bg-[#fff9f2]",
-    gridClass: "bg-grid-warm",
-    textPrimary: "text-[#1e1927]",
-    textMuted: "text-[#6b6375]",
-    navBg: "bg-[#fff9f2]/80 border-[#e5ded2]",
-    navBorder: "border-[#e5ded2]",
-    cardBg: "bg-white/90 backdrop-blur-md",
-    cardBorder: "border-[#e5ded2]",
-    cardHoverBorder: "hover:border-[#ff6b4a]",
-    accentPrimary: "text-[#ff6b4a]",
-    accentPrimaryBg: "bg-[#ff6b4a] hover:bg-[#ff5530]",
-    accentPrimaryText: "text-white",
-    accentSecondary: "text-[#ffc145]",
-    contrastBlockBg: "bg-[#1e1927]",
-    contrastBlockText: "text-[#fff9f2]",
-    heroGradient: "from-[#ff6b4a] via-[#e24d28] to-[#7b59ef]",
-    headingFont: "font-editorial",
-    isDark: false,
-  },
-  cyber: {
-    id: "cyber",
-    name: "Cyber Midnight",
-    icon: "🌌",
-    badge: "Dark Neon & High-Tech",
-    pageBg: "bg-[#0b0f19]",
-    gridClass: "bg-grid-cyber",
-    textPrimary: "text-slate-100",
-    textMuted: "text-slate-400",
-    navBg: "bg-[#0b0f19]/80 border-white/10",
-    navBorder: "border-white/10",
-    cardBg: "bg-[#121827]/90 backdrop-blur-md",
-    cardBorder: "border-white/10",
-    cardHoverBorder: "hover:border-indigo-500",
-    accentPrimary: "text-indigo-400",
-    accentPrimaryBg: "bg-indigo-600 hover:bg-indigo-500",
-    accentPrimaryText: "text-white",
-    accentSecondary: "text-cyan-400",
-    contrastBlockBg: "bg-[#070a12]",
-    contrastBlockText: "text-white",
-    heroGradient: "from-indigo-400 via-purple-400 to-cyan-400",
-    headingFont: "font-['Space_Grotesk']",
-    isDark: true,
-  },
-  clean: {
-    id: "clean",
-    name: "Clean Tech",
-    icon: "⚡",
-    badge: "Stripe & Apple Minimal",
-    pageBg: "bg-[#f8fafc]",
-    gridClass: "bg-grid-clean",
-    textPrimary: "text-[#0f172a]",
-    textMuted: "text-[#64748b]",
-    navBg: "bg-white/85 border-slate-200",
-    navBorder: "border-slate-200",
-    cardBg: "bg-white/95 backdrop-blur-md",
-    cardBorder: "border-slate-200",
-    cardHoverBorder: "hover:border-blue-600",
-    accentPrimary: "text-blue-600",
-    accentPrimaryBg: "bg-blue-600 hover:bg-blue-700",
-    accentPrimaryText: "text-white",
-    accentSecondary: "text-teal-600",
-    contrastBlockBg: "bg-[#0f172a]",
-    contrastBlockText: "text-white",
-    heroGradient: "from-blue-600 via-indigo-600 to-teal-500",
-    headingFont: "font-['Space_Grotesk']",
-    isDark: false,
-  },
-  luxury: {
-    id: "luxury",
-    name: "Obsidian & Gold",
-    icon: "👑",
-    badge: "Luxury Boutique",
-    pageBg: "bg-[#09090b]",
-    gridClass: "bg-grid-luxury",
-    textPrimary: "text-[#fafafa]",
-    textMuted: "text-[#a1a1aa]",
-    navBg: "bg-[#09090b]/85 border-zinc-800",
-    navBorder: "border-zinc-800",
-    cardBg: "bg-[#141418]/90 backdrop-blur-md",
-    cardBorder: "border-zinc-800",
-    cardHoverBorder: "hover:border-amber-500",
-    accentPrimary: "text-amber-400",
-    accentPrimaryBg: "bg-amber-500 hover:bg-amber-400",
-    accentPrimaryText: "text-black",
-    accentSecondary: "text-emerald-400",
-    contrastBlockBg: "bg-[#000000]",
-    contrastBlockText: "text-zinc-100",
-    heroGradient: "from-amber-300 via-amber-500 to-yellow-600",
-    headingFont: "font-editorial",
-    isDark: true,
-  },
-};
-
-type ServicePillar = "web-dev" | "ui-ux" | "marketing" | "all";
-type ScopeTier = "starter" | "growth" | "enterprise";
-type TimelineUrgency = "urgent" | "standard" | "flexible";
-
-interface CaseStudy {
+interface MarketingNode {
   id: string;
-  category: "Web Development" | "UI/UX Design" | "Digital Marketing";
-  title: string;
-  client: string;
-  domain: string;
-  tagline: string;
+  name: string;
+  category: "left" | "right";
+  icon: string;
+  shortDesc: string;
   metric: string;
-  metricLabel: string;
-  badgeGradient: string;
-  tags: string[];
-  challenge: string;
-  solution: string;
-  deliverables: string[];
-  results: string[];
+  kpi: string;
+  details: string[];
 }
 
-const CASE_STUDIES: CaseStudy[] = [
+const MARKETING_NODES: MarketingNode[] = [
   {
-    id: "apex-fintech",
-    category: "Web Development",
-    title: "Apex Next-Gen Fintech Portal",
-    client: "Apex Financial Inc.",
-    domain: "apexfintech.io",
-    tagline: "Ultra-fast Next.js banking dashboard with sub-second real-time trade settlement.",
-    metric: "0.38s",
-    metricLabel: "Core Web Vitals LCP",
-    badgeGradient: "from-[#2ba5b5] to-[#124d54]",
-    tags: ["Next.js 15", "TypeScript", "Tailwind CSS", "WebSockets", "Stripe API"],
-    challenge: "The legacy portal suffered from high latency (3.8s load times) and dropping mobile transactions during peak trading hours.",
-    solution: "Engineered a headless Next.js architecture with edge rendering, WebSocket price tickers, and automated banking compliance checks.",
-    deliverables: ["Full-Stack Next.js Web App", "Financial Ledger Architecture", "Responsive Dashboard", "SOC2 Compliance Integration"],
-    results: ["Reduced bounce rate by 54%", "Handled 120,000+ daily concurrent sessions", "0.38s average page load speed across all devices"],
+    id: "target-audience",
+    name: "Target Audience",
+    category: "left",
+    icon: "🎯",
+    shortDesc: "Hyper-segmented behavioral buyer personas",
+    metric: "3.4x",
+    kpi: "Higher Lead Relevancy",
+    details: [
+      "Deep psychographic profiling & intent scoring",
+      "Lookalike modeling from high LTV customers",
+      "Dynamic negative-audience exclusion lists",
+    ],
   },
   {
-    id: "lumina-health",
-    category: "UI/UX Design",
-    title: "Lumina Telehealth Design System",
-    client: "Lumina Care Network",
-    domain: "luminahealth.org",
-    tagline: "Accessible, human-centric design system and patient booking app for 200k+ patients.",
-    metric: "+68%",
-    metricLabel: "Booking Completion Rate",
-    badgeGradient: "from-[#7b59ef] to-[#422998]",
-    tags: ["Figma", "Design System", "WCAG 2.1 AA", "User Research", "Prototyping"],
-    challenge: "Patients found the multi-step consultation scheduling confusing, resulting in a 42% drop-off rate prior to appointment confirmation.",
-    solution: "Conducted 35 user interviews and designed a 3-step frictionless appointment flow with micro-interactions, high-contrast accessible typography, and dark/light modes.",
-    deliverables: ["Figma Master Design System (120+ Components)", "Interactive High-Fidelity Prototype", "Doctor & Patient Flow Diagrams", "Usability Audit Report"],
-    results: ["+68% increase in completed appointment bookings", "89 Net Promoter Score (NPS) from patient feedback", "Zero WCAG accessibility compliance defects"],
-  },
-  {
-    id: "aura-luxury",
-    category: "Digital Marketing",
-    title: "Aura Luxury Apparel Growth Funnel",
-    client: "Aura Apparel Global",
-    domain: "aurafashion.co",
-    tagline: "Full-funnel Meta & Google Performance Max campaign generating 4.2x ROAS in 90 days.",
-    metric: "4.2x",
-    metricLabel: "Verified Blended ROAS",
-    badgeGradient: "from-[#ff6b4a] to-[#9e2d14]",
-    tags: ["Google Ads", "Meta Ads", "Technical SEO", "CRO", "Attribution Modeling"],
-    challenge: "Customer acquisition costs were rising due to saturated generic keywords and unoptimized product detail page funnels.",
-    solution: "Restructured ad campaigns into high-intent search tiers, paired with dynamic lifestyle UGC video ads, and redesigned product page checkout funnels for instant conversions.",
-    deliverables: ["Full-Funnel Ad Campaign Architecture", "A/B Landing Page Optimizations", "Conversion API & GA4 Tracking Setup", "Weekly Growth Performance Reports"],
-    results: ["4.2x return on ad spend (ROAS)", "+310% growth in month-over-month online revenue", "Lowered Customer Acquisition Cost (CAC) by 38%"],
-  },
-  {
-    id: "hyperion-saas",
-    category: "Web Development",
-    title: "Hyperion AI Workflow Platform",
-    client: "Hyperion Intelligence",
-    domain: "hyperionai.dev",
-    tagline: "Scalable B2B SaaS web application with collaborative workspaces and AI prompt engineering tools.",
-    metric: "99.99%",
-    metricLabel: "Uptime & Reliability",
-    badgeGradient: "from-[#2ba5b5] to-[#125865]",
-    tags: ["React 19", "Node.js", "PostgreSQL", "OpenAI API", "Tailwind CSS"],
-    challenge: "Required an intuitive interface to configure complex AI pipelines without code, needing zero-lag drag-and-drop nodes.",
-    solution: "Built a high-performance interactive canvas web application with state management optimized for 100+ simultaneous canvas nodes.",
-    deliverables: ["Node-based Flow Builder", "Subscription Billing Portal", "API Key Management Dashboard", "Granular Team Permissions"],
-    results: ["Adopted by over 45 Enterprise teams in Month 1", "0 lag render time on 100+ active nodes", "Processed 4.5M AI queries in first quarter"],
-  },
-  {
-    id: "veloce-mobility",
-    category: "UI/UX Design",
-    title: "Veloce EV Companion App UI",
-    client: "Veloce Motors",
-    domain: "veloce-ev.com",
-    tagline: "Next-gen electric vehicle mobile & in-car touchscreen interface with real-time telematics.",
-    metric: "4.9 ★",
-    metricLabel: "App Store User Rating",
-    badgeGradient: "from-[#ffc145] to-[#986e10]",
-    tags: ["Mobile UI/UX", "Automotive HMI", "Motion Design", "Figma", "Design Tokens"],
-    challenge: "Drivers needed critical range and climate data accessible in a split second without cognitive overload while driving.",
-    solution: "Designed high-contrast glances, haptic feedback triggers, charging station live locator, and battery climate scheduling UI.",
-    deliverables: ["iOS & Android Mobile UI Design", "12.8-inch Dashboard Screen UI Kit", "Micro-Interaction Motion Specs", "Comprehensive Design Tokens"],
-    results: ["Featured on Apple App Store 'New & Notable'", "4.9-star average rating with 15k+ downloads", "Reduced interaction steps for charging by 60%"],
-  },
-  {
-    id: "echo-acoustics",
-    category: "Digital Marketing",
-    title: "Echo Acoustics SEO & Brand Authority",
-    client: "Echo Sound Labs",
-    domain: "echosound.studio",
-    tagline: "Dominated organic search for high-ticket audiophile gear through programmatic SEO & PR outreach.",
+    id: "seo",
+    name: "SEO",
+    category: "left",
+    icon: "🔍",
+    shortDesc: "Technical & Programmatic Search Dominance",
     metric: "+480%",
-    metricLabel: "Organic Traffic Growth",
-    badgeGradient: "from-[#ff6b4a] to-[#7b59ef]",
-    tags: ["Programmatic SEO", "Content Strategy", "Backlink Outreach", "Schema Markup", "Technical Audit"],
-    challenge: "The brand was virtually invisible on Google search for commercial acoustic solutions against decades-old competitors.",
-    solution: "Executed a comprehensive technical SEO overhaul, implemented structured schema data, and published 50+ data-driven acoustic calculation guides.",
-    deliverables: ["Technical SEO Infrastructure", "50+ In-Depth Search Pillar Pages", "Acoustic Calculator Interactive Widget", "Digital PR & Backlink Campaign"],
-    results: ["Ranked #1 for 85+ high-intent buyer keywords", "+480% organic organic traffic in 6 months", "Generated over 420 inbound B2B quote inquiries"],
-  },
-];
-
-const PRICING_TIERS = [
-  {
-    name: "Starter Launchpad",
-    badge: "7–10 Day Delivery",
-    description: "Ideal for founders and growing businesses needing a fast, high-converting website or UI/UX sprint.",
-    projectPrice: "₹24,999",
-    retainerPrice: "₹19,999 / mo",
-    timeline: "7 – 10 Days",
-    features: [
-      "Custom 5-Page Responsive Web Development",
-      "Modern Figma UI/UX Design System",
-      "Mobile-First, 95+ Core Web Vitals",
-      "Technical On-Page SEO & Meta Tags",
-      "Contact Form & WhatsApp Chat Integration",
-      "Free Domain & Hosting Setup Assistance",
-      "30 Days Post-Launch Bug Fix Support",
+    kpi: "Organic Traffic Growth",
+    details: [
+      "Core Web Vitals & technical indexing audit",
+      "High-intent commercial keyword mapping",
+      "Authoritative digital PR & backlink acquisition",
     ],
-    popular: false,
-    ctaText: "Select Launchpad",
   },
   {
-    name: "Growth Engine",
-    badge: "Most Popular",
-    description: "Our signature agency package: bespoke Web Development, conversion-focused UI/UX, and foundational Digital Marketing.",
-    projectPrice: "₹49,999",
-    retainerPrice: "₹34,999 / mo",
-    timeline: "2 – 3 Weeks",
-    features: [
-      "Full Custom Next.js / React Web App (Up to 12 Pages)",
-      "Bespoke UI/UX Wireframes & Interactive Figma Prototype",
-      "Complete Technical SEO & Speed Optimization (< 0.8s Load)",
-      "Google Analytics 4, Meta Pixel & Heatmap Setup",
-      "Google Search & Social Media Ad Campaign Strategy",
-      "Content Management System (CMS) for Easy Updates",
-      "Payment Gateway (Razorpay/Stripe) Integration",
-      "60 Days Dedicated Maintenance & Growth Support",
+    id: "social-media",
+    name: "Social Media",
+    category: "left",
+    icon: "👥",
+    shortDesc: "Viral community & social proof building",
+    metric: "98.3K",
+    kpi: "Active Engagement",
+    details: [
+      "Multi-platform short-form video strategy (Reels/TikTok)",
+      "Interactive founder branding & community loops",
+      "Automated social listening & sentiment tracking",
     ],
-    popular: true,
-    ctaText: "Select Growth Engine",
   },
   {
-    name: "Enterprise Custom",
-    badge: "Full-Scale Scale",
-    description: "Built for established brands and scale-ups demanding market dominance, complex apps, and multi-channel marketing.",
-    projectPrice: "₹99,999+",
-    retainerPrice: "₹69,999 / mo",
-    timeline: "4 – 6 Weeks",
-    features: [
-      "Enterprise Web App / Complex E-commerce Platform",
-      "Complete Brand Identity, Logo & Multi-Platform Design System",
-      "Multi-Channel Digital Marketing (Google Ads + Meta + SEO)",
-      "High-Converting Landing Page A/B Testing Matrix",
-      "Custom Backend API, Database & CRM Integrations",
-      "Weekly Strategic Growth Sprints & ROAS Optimization",
-      "Priority 24/7 Developer & Designer Support SLA",
-      "Full IP Transfer & Comprehensive Code Documentation",
+    id: "content-marketing",
+    name: "Content Marketing",
+    category: "left",
+    icon: "🎬",
+    shortDesc: "High-retention storytelling & video assets",
+    metric: "4.2M",
+    kpi: "Qualified Impressions",
+    details: [
+      "In-depth industry research whitepapers & guides",
+      "Dynamic UGC lifestyle video production",
+      "Repurposing flywheel across 6 digital channels",
     ],
-    popular: false,
-    ctaText: "Book Enterprise Consultation",
+  },
+  {
+    id: "performance-analytics",
+    name: "Performance Analytics",
+    category: "right",
+    icon: "📈",
+    shortDesc: "Real-time revenue & attribution telemetry",
+    metric: "100%",
+    kpi: "Transparent Tracking",
+    details: [
+      "GA4 server-side tracking & Conversion API (CAPI)",
+      "Multi-touch blended ROAS & MER attribution",
+      "Custom Looker Studio executive dashboards",
+    ],
+  },
+  {
+    id: "email-marketing",
+    name: "Email Marketing",
+    category: "right",
+    icon: "✉️",
+    shortDesc: "High-converting automated retention flows",
+    metric: "42.8%",
+    kpi: "Average Open Rate",
+    details: [
+      "Abandoned checkout & browse recovery sequences",
+      "VIP customer loyalty & re-engagement drips",
+      "Deliverability optimization & BIMI verification",
+    ],
+  },
+  {
+    id: "google-ads",
+    name: "Google Ads",
+    category: "right",
+    icon: "🔺",
+    shortDesc: "Performance Max & high-intent Search Ads",
+    metric: "5.4x",
+    kpi: "Search Campaign ROAS",
+    details: [
+      "Exact match negative keyword harvesting",
+      "Smart Bidding strategy aligned with tCPA/tROAS",
+      "High-converting landing page A/B split experiments",
+    ],
+  },
+  {
+    id: "meta-ads",
+    name: "Meta Ads",
+    category: "right",
+    icon: "♾️",
+    shortDesc: "Advantage+ catalog & creative scaling",
+    metric: "12.9K",
+    kpi: "Monthly Conversions",
+    details: [
+      "Dynamic creative testing (DCT) matrix framework",
+      "First-party custom audience lookalike scaling",
+      "Rapid creative iteration for ad fatigue elimination",
+    ],
   },
 ];
 
-const TESTIMONIALS = [
+const UI_UX_SERVICES = [
   {
-    name: "Rahul Verma",
-    role: "Founder & CEO",
-    company: "FinMatrix Solutions",
-    content:
-      "Nexus Creative completely transformed our digital presence. They rebuilt our core web application in Next.js and designed a UI that our users constantly praise. Our conversion rate shot up by 180% within 45 days of launch.",
-    rating: 5,
-    highlight: "+180% Conversion Lift",
-    service: "Web Dev & UI/UX",
+    id: "ui-design",
+    title: "UI Design",
+    icon: "🪟",
+    accentColor: "border-cyan-500/40 text-cyan-400 bg-cyan-500/10",
+    btnColor: "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500",
+    description:
+      "Pixel-perfect, visually arresting user interfaces crafted with precision design tokens, responsive typography, and tactile micro-interactions.",
+    details: [
+      "Multi-platform Design Systems (Figma tokens & variables)",
+      "High-contrast accessible color harmony (WCAG AA certified)",
+      "Dynamic component libraries for React & Tailwind CSS",
+      "Micro-animations & seamless state transitions",
+    ],
+    metric: "100% Pixel Perfect",
   },
   {
-    name: "Priya Sundaram",
-    role: "Marketing Director",
-    company: "Aura Lifestyle",
-    content:
-      "Their digital marketing team is world-class. Instead of burning budget on vanity metrics, they dialed in our Google Performance Max and Meta campaigns to deliver a verified 4.2x ROAS. Best agency investment we've ever made.",
-    rating: 5,
-    highlight: "4.2x ROAS",
-    service: "Digital Marketing",
+    id: "ux-experience",
+    title: "UX Experience",
+    icon: "🧠",
+    accentColor: "border-purple-500/40 text-purple-400 bg-purple-500/10",
+    btnColor: "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500",
+    description:
+      "Data-backed user journey architectures, cognitive empathy research, and friction-free conversion funnels designed to maximize engagement.",
+    details: [
+      "User research interviews & heat-map telemetry audits",
+      "Frictionless 3-step checkout & onboarding journeys",
+      "Interactive clickable high-fidelity wireframe prototypes",
+      "Usability testing with quantitative task-completion metrics",
+    ],
+    metric: "+68% Conversion Lift",
   },
   {
-    name: "Arun Krishnan",
-    role: "Product Lead",
-    company: "Zest Cloud Systems",
-    content:
-      "The UI/UX design deliverables blew our executive team away. The Figma prototypes felt like a live app before writing a single line of code. Clean typography, thoughtful micro-interactions, and blazing fast delivery.",
-    rating: 5,
-    highlight: "Flawless Delivery",
-    service: "UI/UX Design",
-  },
-  {
-    name: "Sarah Jenkins",
-    role: "VP of Operations",
-    company: "OmniHealth Global",
-    content:
-      "Working with Nexus felt like having an in-house SWAT team of senior developers and designers. Clean code, 98+ PageSpeed scores, and continuous marketing support that kept our lead volume skyrocketing.",
-    rating: 5,
-    highlight: "98+ PageSpeed Score",
-    service: "Full Growth Bundle",
-  },
-];
-
-const FAQS = [
-  {
-    category: "General",
-    q: "How do your Web Development, UI/UX Design, and Digital Marketing pillars integrate?",
-    a: "We believe great digital products require all three to work harmoniously. Our UI/UX designers create high-converting interfaces, our web developers build them for lightning-fast speeds and clean code, and our digital marketing strategists ensure they rank #1 on search engines and convert paid traffic profitably.",
-  },
-  {
-    category: "Web Dev",
-    q: "What tech stack do you use for web development?",
-    a: "We specialize in modern, high-performance stacks including React 19, Next.js 15, TypeScript, Tailwind CSS, Node.js, and headless CMS platforms like Sanity or Strapi. For e-commerce, we build custom Shopify Plus or Stripe-powered web apps with 95+ Core Web Vitals.",
-  },
-  {
-    category: "UI/UX",
-    q: "How does the UI/UX design phase work before coding begins?",
-    a: "We follow a 3-step design process: 1) Wireframing and user journey mapping, 2) High-fidelity Figma visual design with design system tokens, and 3) Interactive clickable prototyping. You review and approve the exact look and feel before any development starts.",
-  },
-  {
-    category: "Marketing",
-    q: "When can we expect results from your Digital Marketing & SEO campaigns?",
-    a: "Paid advertising (Google Ads & Meta Ads) produces immediate qualified traffic and conversions within the first 48 to 72 hours of launch. For organic SEO, notable keyword ranking increases and traffic gains typically compound within 60 to 90 days.",
-  },
-  {
-    category: "Pricing",
-    q: "What is your project payment structure and timeline?",
-    a: "We typically work with milestone-based billing: 40% initial deposit to kickoff discovery and UI/UX design, 30% upon approval of development staging, and 30% upon final quality verification and live launch. We also offer flexible monthly growth retainers.",
-  },
-  {
-    category: "Support",
-    q: "Do you offer post-launch maintenance, hosting, and updates?",
-    a: "Yes! Every project includes complimentary post-launch support (30 to 60 days). We also provide ongoing maintenance plans covering security patches, speed optimizations, server management, and content updates so you never have to worry about downtime.",
+    id: "web-dev",
+    title: "Web Development",
+    icon: "⚙️",
+    accentColor: "border-blue-500/40 text-blue-400 bg-blue-500/10",
+    btnColor: "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500",
+    description:
+      "Lightning-fast, modern full-stack web applications engineered with React, Next.js, and TypeScript, delivering sub-second load speeds.",
+    details: [
+      "Modern React 19 / Next.js 15 headless architecture",
+      "Core Web Vitals guaranteed 95+ PageSpeed benchmark",
+      "SEO-first semantic structure & automated OpenGraph data",
+      "Stripe, Razorpay, and REST/GraphQL API integrations",
+    ],
+    metric: "< 0.8s Global Load",
   },
 ];
 
-const COMPARISONS = [
+const EXPERTISE_CARDS = [
   {
-    feature: "Core Speed & Core Web Vitals",
-    nexus: "Guaranteed 95+ PageSpeed & <0.8s load",
-    traditional: "Often bloated CMS templates (>3.5s)",
-    freelancer: "Hit or miss, rarely benchmarked",
+    title: "Strategy & Planning",
+    icon: "💡",
+    desc: "Comprehensive roadmap with competitor market gaps, audience segmentation, and channel forecasting.",
+    stat: "14-Day",
+    statLabel: "Sprint Delivery",
   },
   {
-    feature: "Full-Stack Ownership (Design + Code + Ads)",
-    nexus: "Single cohesive team & unified vision",
-    traditional: "Disjointed departments with finger pointing",
-    freelancer: "Usually specialized in only one area",
+    title: "Automation & Tools",
+    icon: "⚙️",
+    desc: "Seamless CRM sync, webhook triggers, email drips, and programmatic workflows that work 24/7.",
+    stat: "99.9%",
+    statLabel: "Pipeline Uptime",
   },
   {
-    feature: "Transparent Pricing & Milestones",
-    nexus: "Fixed upfront INR pricing & escrow milestones",
-    traditional: "Hidden agency retainers & scope creep",
-    freelancer: "Uncertain estimates and unexpected hourly charges",
+    title: "Conversion Optimization",
+    icon: "📊",
+    desc: "Relentless A/B testing on headlines, CTAs, hero visuals, and checkout checkout funnels.",
+    stat: "3.2x",
+    statLabel: "Avg. Lift",
   },
   {
-    feature: "Senior Talent Direct Access",
-    nexus: "Direct Slack / WhatsApp with Lead Engineer & Designer",
-    traditional: "Junior account managers relaying messages",
-    freelancer: "Direct, but vulnerable to availability ghosting",
+    title: "ROI Focused",
+    icon: "💲",
+    desc: "Every single dollar spent is mapped directly to qualified pipeline, customers, and bottom-line profit.",
+    stat: "4.2x",
+    statLabel: "Blended ROAS",
   },
-  {
-    feature: "Code & Design System IP Ownership",
-    nexus: "100% full intellectual property transfer on launch",
-    traditional: "Proprietary vendor lock-in",
-    freelancer: "Usually complete, but lacking documentation",
-  },
+];
+
+const TRUST_BADGES = [
+  { label: "Result Driven Strategies", icon: "🛡️" },
+  { label: "Data Backed Decisions", icon: "🚀" },
+  { label: "Transparent & Reliable", icon: "🔒" },
+  { label: "Dedicated Support", icon: "👥" },
 ];
 
 export default function App() {
-  const [currentThemeId, setCurrentThemeId] = useState<ThemeId>("warm");
-  const theme = THEMES[currentThemeId];
-
-  // Hero interactive preview state
-  const [heroActiveTab, setHeroActiveTab] = useState<"speed" | "design" | "growth">("speed");
-  const [heroPaletteColor, setHeroPaletteColor] = useState<string>("#ff6b4a");
-  const [growthTimeframe, setGrowthTimeframe] = useState<"30d" | "60d" | "90d">("90d");
-
-  // Mobile Menu & Filters
+  const [viewMode, setViewMode] = useState<ViewMode>("unified");
+  const [selectedServiceModal, setSelectedServiceModal] = useState<typeof UI_UX_SERVICES[0] | null>(null);
+  const [selectedMarketingNode, setSelectedMarketingNode] = useState<MarketingNode | null>(MARKETING_NODES[0]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activePortfolioCategory, setActivePortfolioCategory] = useState<string>("All");
-  const [selectedCaseStudy, setSelectedCaseStudy] = useState<CaseStudy | null>(null);
-  const [pricingPeriod, setPricingPeriod] = useState<"project" | "retainer">("project");
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-  const [faqFilter, setFaqFilter] = useState<string>("All");
 
   // Estimator State
-  const [estService, setEstService] = useState<ServicePillar>("all");
-  const [estScope, setEstScope] = useState<ScopeTier>("growth");
-  const [estTimeline, setEstTimeline] = useState<TimelineUrgency>("standard");
-  const [estAddons, setEstAddons] = useState<{ [key: string]: boolean }>({
+  const [servicePillar, setServicePillar] = useState<"agency" | "marketing" | "both">("both");
+  const [scopeTier, setScopeTier] = useState<"starter" | "growth" | "enterprise">("growth");
+  const [urgency, setUrgency] = useState<"standard" | "urgent">("standard");
+  const [addons, setAddons] = useState<{ [key: string]: boolean }>({
     seo: true,
+    ads: true,
     cms: true,
-    ads: false,
     speed: true,
   });
 
   // Contact Form State
-  const [formSubmitted, setFormSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    service: "Web Development & UI/UX Design",
-    budget: "₹25,000 - ₹50,000",
+    service: "Full Agency + Digital Marketing Bundle",
+    budget: "₹50,000 - ₹1,00,000",
     message: "",
   });
-
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const formId = useId();
 
-  // Calculate live estimate in INR
+  // Price estimate calculation in INR
   const calculateEstimate = () => {
-    let base = 25000;
-    if (estService === "web-dev") base = 30000;
-    else if (estService === "ui-ux") base = 22000;
-    else if (estService === "marketing") base = 25000;
-    else if (estService === "all") base = 55000;
+    let base = 35000;
+    if (servicePillar === "agency") base = 30000;
+    if (servicePillar === "marketing") base = 32000;
+    if (servicePillar === "both") base = 58000;
 
     let multiplier = 1.0;
-    if (estScope === "starter") multiplier = 0.75;
-    else if (estScope === "growth") multiplier = 1.0;
-    else if (estScope === "enterprise") multiplier = 1.8;
+    if (scopeTier === "starter") multiplier = 0.75;
+    if (scopeTier === "growth") multiplier = 1.0;
+    if (scopeTier === "enterprise") multiplier = 1.85;
 
-    let urgencyCost = 0;
-    if (estTimeline === "urgent") urgencyCost = 10000;
+    let urgencyFee = urgency === "urgent" ? 12000 : 0;
+    let addonSum = 0;
+    if (addons.seo) addonSum += 6000;
+    if (addons.ads) addonSum += 8000;
+    if (addons.cms) addonSum += 7000;
+    if (addons.speed) addonSum += 4000;
 
-    let addonCost = 0;
-    if (estAddons.seo) addonCost += 6000;
-    if (estAddons.cms) addonCost += 8000;
-    if (estAddons.ads) addonCost += 10000;
-    if (estAddons.speed) addonCost += 4000;
-
-    const total = Math.round(base * multiplier + urgencyCost + addonCost);
-    return total.toLocaleString("en-IN");
+    return Math.round(base * multiplier + urgencyFee + addonSum).toLocaleString("en-IN");
   };
 
-  const filteredCaseStudies =
-    activePortfolioCategory === "All"
-      ? CASE_STUDIES
-      : CASE_STUDIES.filter((item) => item.category === activePortfolioCategory);
-
-  const filteredFaqs =
-    faqFilter === "All" ? FAQS : FAQS.filter((f) => f.category === faqFilter);
-
-  const toggleAddon = (key: string) => {
-    setEstAddons((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormSubmitted(true);
-  };
-
-  const getWhatsAppUrl = () => {
-    const serviceName =
-      estService === "all"
-        ? "All-in-One (Web Dev + UI/UX + Marketing)"
-        : estService === "web-dev"
-        ? "Web Development"
-        : estService === "ui-ux"
-        ? "UI/UX Design"
-        : "Digital Marketing";
-
+  const getWhatsAppLink = () => {
     const text = encodeURIComponent(
-      `Hello Nexus Creative! I'm interested in starting a project.\n\n` +
-        `📌 Service: ${serviceName}\n` +
-        `🎯 Scope: ${estScope.toUpperCase()}\n` +
-        `⏱️ Timeline: ${estTimeline.toUpperCase()}\n` +
-        `💰 Ballpark Estimate: ₹${calculateEstimate()}\n\n` +
-        `I'd love to discuss requirements and get a detailed proposal!`
+      `Hello Nexus Creative! I am interested in your services.\n\n` +
+        `• Service: ${servicePillar.toUpperCase()}\n` +
+        `• Tier: ${scopeTier.toUpperCase()}\n` +
+        `• Timeline: ${urgency.toUpperCase()}\n` +
+        `• Estimated Budget: ₹${calculateEstimate()}\n\n` +
+        `Please share your availability for a discovery call!`
     );
     return `https://wa.me/917010231792?text=${text}`;
   };
 
   return (
-    <div
-      className={`${theme.pageBg} ${theme.gridClass} ${theme.textPrimary} min-h-screen transition-colors duration-500 relative selection:bg-[#ff6b4a] selection:text-white`}
-    >
-      {/* Dynamic Ambient Glowing Orbs */}
+    <div className="min-h-screen bg-[#050914] text-slate-100 selection:bg-cyan-500 selection:text-black relative font-display">
+      {/* Ambient Cyber Neon Background Glows */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        {theme.id === "warm" && (
-          <>
-            <div className="absolute top-10 -right-24 w-[450px] h-[450px] rounded-full bg-gradient-to-br from-[#ffc145]/25 to-[#ff6b4a]/20 blur-[110px] animate-float" />
-            <div className="absolute top-1/2 -left-36 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-[#ff6b4a]/20 to-[#7b59ef]/15 blur-[120px] animate-float-reverse" />
-            <div className="absolute bottom-10 right-1/4 w-[380px] h-[380px] rounded-full bg-[#2ba5b5]/15 blur-[100px]" />
-          </>
-        )}
-        {theme.id === "cyber" && (
-          <>
-            <div className="absolute top-0 left-1/4 w-[650px] h-[650px] bg-indigo-600/20 rounded-full blur-[150px] animate-pulse-subtle" />
-            <div className="absolute top-1/3 right-10 w-[550px] h-[550px] bg-cyan-500/15 rounded-full blur-[140px] animate-float" />
-            <div className="absolute bottom-10 left-10 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[130px] animate-float-reverse" />
-          </>
-        )}
-        {theme.id === "clean" && (
-          <>
-            <div className="absolute top-10 right-1/3 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] animate-float" />
-            <div className="absolute bottom-1/4 left-10 w-[450px] h-[450px] bg-teal-500/10 rounded-full blur-[110px] animate-float-reverse" />
-          </>
-        )}
-        {theme.id === "luxury" && (
-          <>
-            <div className="absolute top-10 right-10 w-[500px] h-[500px] bg-amber-500/15 rounded-full blur-[130px] animate-float" />
-            <div className="absolute bottom-20 left-1/4 w-[450px] h-[450px] bg-yellow-600/10 rounded-full blur-[120px] animate-float-reverse" />
-          </>
-        )}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[500px] bg-blue-600/15 rounded-full blur-[160px]" />
+        <div className="absolute top-[35%] -left-32 w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[150px] animate-float" />
+        <div className="absolute top-[65%] -right-32 w-[650px] h-[650px] bg-purple-600/15 rounded-full blur-[160px] animate-float-reverse" />
+        <div className="absolute bottom-0 left-1/3 w-[700px] h-[400px] bg-blue-500/10 rounded-full blur-[140px]" />
       </div>
 
       {/* ========================================================================= */}
-      {/* FLOATING THEME DOCK (BOTTOM CENTER) */}
+      {/* 0. FLOATING TEMPLATE SELECTOR DOCK (TOP PILL) */}
       {/* ========================================================================= */}
-      <aside
-        aria-label="Style Switcher"
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 p-1.5 rounded-full backdrop-blur-2xl bg-black/85 border border-white/20 shadow-2xl transition-all"
-      >
-        <span className="text-[11px] font-mono text-white/70 px-3 hidden sm:inline-flex items-center gap-1.5 border-r border-white/10">
-          <span>🎨</span>
-          <span className="font-semibold tracking-wide">Theme:</span>
-        </span>
-        {(Object.keys(THEMES) as ThemeId[]).map((tId) => {
-          const t = THEMES[tId];
-          const active = currentThemeId === tId;
-          return (
+      <div className="bg-[#0b1329]/90 backdrop-blur-md border-b border-cyan-500/20 py-2.5 px-4 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+            </span>
+            <span className="text-slate-300 font-mono hidden sm:inline">
+              LIVE TEMPLATE SHOWCASE:
+            </span>
+            <span className="text-cyan-400 font-semibold">
+              Digital Agency & Digital Marketing Hub
+            </span>
+          </div>
+
+          {/* View Mode Switcher */}
+          <div className="flex items-center gap-1.5 bg-[#050914] p-1 rounded-full border border-white/10">
             <button
-              key={tId}
-              onClick={() => setCurrentThemeId(tId)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                active
-                  ? "bg-white text-black shadow-lg scale-105 font-bold"
-                  : "text-white/80 hover:text-white hover:bg-white/10"
+              onClick={() => setViewMode("unified")}
+              className={`px-3 py-1 rounded-full font-medium transition-all ${
+                viewMode === "unified"
+                  ? "bg-cyan-500 text-black font-bold shadow-md shadow-cyan-500/30"
+                  : "text-slate-400 hover:text-white"
               }`}
-              title={t.badge}
             >
-              <span>{t.icon}</span>
-              <span className="text-[11px] whitespace-nowrap">{t.name}</span>
+              Unified Experience
             </button>
-          );
-        })}
-      </aside>
-
-      {/* FLOATING WHATSAPP BUTTON (BOTTOM RIGHT) */}
-      <a
-        href="https://wa.me/917010231792"
-        target="_blank"
-        rel="noreferrer"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white shadow-xl hover:scale-105 transition-all group"
-        aria-label="Chat on WhatsApp"
-      >
-        <span className="relative flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-        </span>
-        <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-          <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.83 2.41c-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.3a8.163 8.163 0 01-1.26-4.49c0-4.54 3.7-8.24 8.25-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.32z" />
-        </svg>
-        <span className="text-xs font-bold tracking-wide hidden md:inline">Quick Chat</span>
-      </a>
-
-      {/* ========================================================================= */}
-      {/* 1. STICKY HEADER WITH FROSTED GLASS */}
-      {/* ========================================================================= */}
-      <header
-        className={`sticky top-0 z-40 w-full backdrop-blur-xl border-b ${theme.navBg} transition-all duration-300`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Brand Logo */}
-          <a href="#" className="flex items-center gap-3.5 group">
-            <div
-              className={`w-11 h-11 rounded-2xl ${theme.accentPrimaryBg} flex items-center justify-center ${theme.accentPrimaryText} shadow-md group-hover:rotate-12 transition-transform duration-300 font-bold text-lg`}
+            <button
+              onClick={() => setViewMode("agency")}
+              className={`px-3 py-1 rounded-full font-medium transition-all ${
+                viewMode === "agency"
+                  ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-500/30"
+                  : "text-slate-400 hover:text-white"
+              }`}
             >
-              ✦
+              Agency Design (T1)
+            </button>
+            <button
+              onClick={() => setViewMode("marketing")}
+              className={`px-3 py-1 rounded-full font-medium transition-all ${
+                viewMode === "marketing"
+                  ? "bg-purple-600 text-white font-bold shadow-md shadow-purple-500/30"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Digital Marketing (T2)
+            </button>
+          </div>
+
+          <div className="hidden md:flex items-center gap-3">
+            <a
+              href="https://wa.me/917010231792"
+              target="_blank"
+              rel="noreferrer"
+              className="text-emerald-400 hover:text-emerald-300 font-mono flex items-center gap-1.5"
+            >
+              <span>● WhatsApp:</span>
+              <span className="font-bold">+91 70102 31792</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 1. MAIN NAVIGATION HEADER */}
+      {/* ========================================================================= */}
+      <header className="border-b border-white/10 bg-[#060c1d]/80 backdrop-blur-xl sticky top-[49px] z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          {/* Logo */}
+          <a href="#" className="flex items-center gap-3.5 group">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-600 p-[1.5px] shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-all">
+              <div className="w-full h-full bg-[#050914] rounded-2xl flex items-center justify-center text-cyan-400 font-black text-xl">
+                ✦
+              </div>
             </div>
             <div className="flex flex-col">
-              <span
-                className={`${theme.headingFont} font-bold text-xl tracking-tight ${theme.textPrimary} leading-none flex items-center gap-1.5`}
-              >
-                Nexus <span className={`italic ${theme.accentPrimary}`}>Creative</span>
+              <span className="text-xl font-extrabold tracking-tight text-white leading-none">
+                NEXUS <span className="text-cyan-400 text-glow-cyan">CREATIVE</span>
               </span>
-              <span
-                className={`text-[10px] tracking-widest uppercase ${theme.accentPrimary} font-mono font-semibold mt-1 flex items-center gap-1`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                nexuscreative.site
+              <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400 mt-1">
+                DESIGNED FOR YOUR SUCCESS
               </span>
             </div>
           </a>
 
-          {/* Desktop Nav */}
-          <nav
-            className={`hidden lg:flex items-center gap-8 text-sm font-medium ${theme.textPrimary}`}
-          >
-            <a href="#services" className={`hover:${theme.accentPrimary} transition-colors`}>
-              Core Pillars
+          {/* Nav Links */}
+          <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
+            <a href="#home" className="hover:text-cyan-400 transition-colors">
+              Home
             </a>
-            <a href="#interactive-preview" className={`hover:${theme.accentPrimary} transition-colors`}>
-              Interactive Hub
+            <a href="#about" className="hover:text-cyan-400 transition-colors">
+              About
             </a>
-            <a href="#work" className={`hover:${theme.accentPrimary} transition-colors`}>
-              Case Studies
+            <a href="#services" className="hover:text-cyan-400 transition-colors">
+              Services
             </a>
-            <a
-              href="#estimator"
-              className={`hover:${theme.accentPrimary} transition-colors flex items-center gap-1.5`}
-            >
-              <span>Cost Estimator</span>
-              <span className="bg-red-500/15 text-red-500 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
-                Live
+            <a href="#marketing-hub" className="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+              <span>Marketing Hub</span>
+              <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] px-2 py-0.5 rounded-full font-mono">
+                3D Hub
               </span>
             </a>
-            <a href="#pricing" className={`hover:${theme.accentPrimary} transition-colors`}>
-              Pricing
+            <a href="#portfolio" className="hover:text-cyan-400 transition-colors">
+              Portfolio
             </a>
-            <a href="#compare" className={`hover:${theme.accentPrimary} transition-colors`}>
-              Why Us
+            <a href="#estimator" className="hover:text-cyan-400 transition-colors">
+              Estimator
             </a>
-            <a href="#faq" className={`hover:${theme.accentPrimary} transition-colors`}>
-              FAQ
+            <a href="#contact" className="hover:text-cyan-400 transition-colors">
+              Contact
             </a>
           </nav>
 
-          {/* Quick CTA Buttons */}
+          {/* Quick CTA */}
           <div className="hidden sm:flex items-center gap-3">
             <a
               href="https://wa.me/917010231792"
               target="_blank"
               rel="noreferrer"
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold ${theme.cardBg} border ${theme.cardBorder} hover:border-[#25D366] transition-all shadow-sm`}
+              className="px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/20 transition-all flex items-center gap-2"
             >
-              <svg className="w-4 h-4 fill-[#25D366]" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 fill-emerald-400" viewBox="0 0 24 24">
                 <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.83 2.41c-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.3a8.163 8.163 0 01-1.26-4.49c0-4.54 3.7-8.24 8.25-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.32z" />
               </svg>
-              <span>WhatsApp</span>
+              <span>Instant Chat</span>
             </a>
-
             <a
               href="#contact"
-              className={`px-6 py-2.5 rounded-full text-xs font-bold ${theme.accentPrimaryBg} ${theme.accentPrimaryText} shadow-md hover:shadow-xl transition-all hover:scale-105`}
+              className="px-5 py-2.5 rounded-xl glow-blue-btn text-white text-xs font-bold tracking-wide"
             >
-              Start a Project →
+              Get Started →
             </a>
           </div>
 
-          {/* Mobile menu trigger */}
+          {/* Mobile hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`lg:hidden p-2 rounded-xl ${theme.cardBg} border ${theme.cardBorder} ${theme.textPrimary}`}
-            aria-label="Toggle Navigation"
+            className="lg:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-slate-200"
+            aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {mobileMenuOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              ) : (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
+              )}
+            </svg>
           </button>
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile drawer */}
         {mobileMenuOpen && (
-          <div
-            className={`lg:hidden border-t ${theme.navBorder} ${theme.pageBg} px-6 py-6 space-y-3 shadow-2xl animate-fade-in`}
-          >
+          <div className="lg:hidden bg-[#070e22] border-b border-cyan-500/20 px-6 py-6 space-y-4">
+            <a
+              href="#home"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-slate-200 hover:text-cyan-400 py-1"
+            >
+              Home
+            </a>
             <a
               href="#services"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block ${theme.textPrimary} font-medium py-2`}
+              className="block text-slate-200 hover:text-cyan-400 py-1"
             >
-              Core Pillars (Web Dev, UI/UX, Marketing)
+              UI/UX Layout & Services
             </a>
             <a
-              href="#interactive-preview"
+              href="#portfolio"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block ${theme.textPrimary} font-medium py-2`}
+              className="block text-slate-200 hover:text-cyan-400 py-1"
             >
-              Interactive Capabilities Hub
+              Device Showcases (Mobile & Desktop)
             </a>
             <a
-              href="#work"
+              href="#marketing-hub"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block ${theme.textPrimary} font-medium py-2`}
+              className="block text-cyan-400 font-semibold py-1"
             >
-              Selected Case Studies
+              Digital Marketing 3D Hub
             </a>
             <a
               href="#estimator"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block ${theme.accentPrimary} font-medium py-2`}
+              className="block text-slate-200 hover:text-cyan-400 py-1"
             >
-              Instant Cost Estimator
+              Live Project Estimator
             </a>
             <a
-              href="#pricing"
+              href="#contact"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block ${theme.textPrimary} font-medium py-2`}
+              className="block text-slate-200 hover:text-cyan-400 py-1"
             >
-              Transparent Pricing Plans
+              Contact & WhatsApp
             </a>
-            <a
-              href="#compare"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block ${theme.textPrimary} font-medium py-2`}
-            >
-              Why Choose Nexus
-            </a>
-            <a
-              href="#faq"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block ${theme.textPrimary} font-medium py-2`}
-            >
-              FAQ
-            </a>
-            <div className="pt-4 flex flex-col gap-3">
+            <div className="pt-2 flex flex-col gap-2">
               <a
-                href="https://wa.me/917010231792"
-                className={`w-full text-center py-3 rounded-full font-semibold ${theme.textPrimary} ${theme.cardBg} border ${theme.cardBorder}`}
+                href={getWhatsAppLink()}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full text-center py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold"
               >
                 Chat on WhatsApp (+91 70102 31792)
-              </a>
-              <a
-                href="#contact"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`w-full text-center py-3 rounded-full font-semibold ${theme.accentPrimaryBg} ${theme.accentPrimaryText}`}
-              >
-                Get Free Project Quote
               </a>
             </div>
           </div>
@@ -783,1877 +508,1172 @@ export default function App() {
       </header>
 
       {/* ========================================================================= */}
-      {/* 2. HERO SECTION */}
+      {/* SECTION 1: TEMPLATE 1 - HERO SECTION ("CREATIVE DIGITAL AGENCY") */}
       {/* ========================================================================= */}
-      <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto space-y-8">
-            {/* Top pill status badge */}
-            <div
-              className={`inline-flex items-center gap-2.5 px-5 py-2 rounded-full ${theme.cardBg} border ${theme.cardBorder} text-xs font-mono ${theme.textPrimary} shadow-sm animate-float`}
-            >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Nexuscreative.site • Award-Winning Studio • Web Dev • UI/UX • Growth</span>
-            </div>
-
-            {/* Headline with dynamic gradient text */}
-            <h1
-              className={`text-4xl sm:text-6xl lg:text-7xl font-bold ${theme.headingFont} tracking-tight ${theme.textPrimary} leading-[1.08]`}
-            >
-              We Engineer High-Performing <br />
-              <span className={`bg-gradient-to-r ${theme.heroGradient} bg-clip-text text-transparent italic`}>
-                Web Applications
-              </span>
-              , Bespoke <span className="italic text-[#7b59ef]">UI/UX</span>, &amp; Scalable{" "}
-              <span className="italic text-[#2ba5b5]">Marketing</span>.
-            </h1>
-
-            {/* Subtitle */}
-            <p
-              className={`text-lg sm:text-xl ${theme.textMuted} max-w-2xl mx-auto font-normal leading-relaxed`}
-            >
-              Hand-crafted web applications, high-converting Figma design systems, and data-driven ad
-              campaigns built for founders who refuse generic templates.
-            </p>
-
-            {/* CTA Group */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-              <a
-                href="#estimator"
-                className={`w-full sm:w-auto px-8 py-4 rounded-full font-bold text-sm ${theme.accentPrimaryBg} ${theme.accentPrimaryText} shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2.5 group`}
-              >
-                <span>Calculate Project Cost</span>
-                <svg
-                  className="w-4 h-4 group-hover:translate-x-1.5 transition-transform"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </a>
-
-              <a
-                href="#interactive-preview"
-                className={`w-full sm:w-auto px-8 py-4 rounded-full font-semibold text-sm ${theme.cardBg} border ${theme.cardBorder} ${theme.textPrimary} transition-all flex items-center justify-center gap-2 shadow-sm hover:border-indigo-500`}
-              >
-                <span>Explore Live Capabilities Hub ↓</span>
-              </a>
-            </div>
-
-            {/* Live Stats Row with Glassmorphism */}
-            <div
-              className={`pt-10 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 border-t ${theme.cardBorder} max-w-4xl mx-auto`}
-            >
-              <div
-                className={`${theme.cardBg} p-5 rounded-3xl border ${theme.cardBorder} text-center shadow-sm hover:scale-105 transition-transform`}
-              >
-                <p className={`text-3xl sm:text-4xl font-bold ${theme.headingFont} ${theme.accentPrimary}`}>
-                  180+
-                </p>
-                <p className={`text-xs ${theme.textMuted} mt-1 font-mono uppercase tracking-wider`}>
-                  Projects Shipped
-                </p>
-              </div>
-              <div
-                className={`${theme.cardBg} p-5 rounded-3xl border ${theme.cardBorder} text-center shadow-sm hover:scale-105 transition-transform`}
-              >
-                <p className={`text-3xl sm:text-4xl font-bold ${theme.headingFont} text-emerald-400`}>
-                  99.4%
-                </p>
-                <p className={`text-xs ${theme.textMuted} mt-1 font-mono uppercase tracking-wider`}>
-                  Client Delight
-                </p>
-              </div>
-              <div
-                className={`${theme.cardBg} p-5 rounded-3xl border ${theme.cardBorder} text-center shadow-sm hover:scale-105 transition-transform`}
-              >
-                <p className={`text-3xl sm:text-4xl font-bold ${theme.headingFont} ${theme.accentSecondary}`}>
-                  3.8x
-                </p>
-                <p className={`text-xs ${theme.textMuted} mt-1 font-mono uppercase tracking-wider`}>
-                  Avg. Client ROI
-                </p>
-              </div>
-              <div
-                className={`${theme.cardBg} p-5 rounded-3xl border ${theme.cardBorder} text-center shadow-sm hover:scale-105 transition-transform`}
-              >
-                <p className={`text-3xl sm:text-4xl font-bold ${theme.headingFont} text-[#7b59ef]`}>
-                  &lt; 0.8s
-                </p>
-                <p className={`text-xs ${theme.textMuted} mt-1 font-mono uppercase tracking-wider`}>
-                  Page Load Speed
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ========================================================================= */}
-          {/* INTERACTIVE CAPABILITIES CANVAS (HERO SHOWCASE) */}
-          {/* ========================================================================= */}
-          <div
-            id="interactive-preview"
-            className="mt-16 max-w-5xl mx-auto rounded-[36px] p-2 bg-gradient-to-b from-white/20 via-white/5 to-transparent border border-white/20 shadow-2xl"
-          >
-            <div
-              className={`${theme.contrastBlockBg} ${theme.contrastBlockText} rounded-[32px] overflow-hidden border border-white/10 shadow-2xl`}
-            >
-              {/* Browser Mockup Top Chrome Bar */}
-              <div className="px-6 py-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-4 bg-black/40">
-                <div className="flex items-center gap-2">
-                  <span className="w-3.5 h-3.5 rounded-full bg-rose-500/80 inline-block" />
-                  <span className="w-3.5 h-3.5 rounded-full bg-amber-500/80 inline-block" />
-                  <span className="w-3.5 h-3.5 rounded-full bg-emerald-500/80 inline-block" />
-                  <span className="text-xs font-mono opacity-50 ml-3 hidden sm:inline">
-                    nexuscreative.site/capabilities
-                  </span>
+      {(viewMode === "unified" || viewMode === "agency") && (
+        <section
+          id="home"
+          className="relative pt-12 pb-20 md:pt-20 md:pb-28 overflow-hidden bg-grid-cyber border-b border-white/10"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              {/* Left Column: Hero Text */}
+              <div className="lg:col-span-7 space-y-7 text-left">
+                {/* Status Pill */}
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-xs text-cyan-300 font-mono shadow-lg shadow-cyan-500/10">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span>PREMIUM DIGITAL AGENCY & GROWTH ACCELERATOR</span>
                 </div>
 
-                {/* Switcher Tabs */}
-                <div className="flex items-center p-1 rounded-full bg-white/10 border border-white/10 text-xs font-mono">
-                  <button
-                    onClick={() => setHeroActiveTab("speed")}
-                    className={`px-3.5 py-1 rounded-full font-semibold transition-all ${
-                      heroActiveTab === "speed"
-                        ? "bg-white text-black shadow-md font-bold"
-                        : "opacity-75 hover:opacity-100"
-                    }`}
-                  >
-                    ⚡ Speed &amp; Vitals
-                  </button>
-                  <button
-                    onClick={() => setHeroActiveTab("design")}
-                    className={`px-3.5 py-1 rounded-full font-semibold transition-all ${
-                      heroActiveTab === "design"
-                        ? "bg-white text-black shadow-md font-bold"
-                        : "opacity-75 hover:opacity-100"
-                    }`}
-                  >
-                    🎨 UI/UX System
-                  </button>
-                  <button
-                    onClick={() => setHeroActiveTab("growth")}
-                    className={`px-3.5 py-1 rounded-full font-semibold transition-all ${
-                      heroActiveTab === "growth"
-                        ? "bg-white text-black shadow-md font-bold"
-                        : "opacity-75 hover:opacity-100"
-                    }`}
-                  >
-                    📈 ROAS Funnel
-                  </button>
+                {/* Big Bold Headline matching Template 1 */}
+                <div className="space-y-2">
+                  <h2 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white uppercase">
+                    CREATIVE
+                  </h2>
+                  <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight uppercase bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent text-glow-cyan">
+                    DIGITAL AGENCY
+                  </h1>
                 </div>
-              </div>
 
-              {/* Showcase Body Content */}
-              <div className="p-6 sm:p-10">
-                {/* TAB 1: Speed & Vitals */}
-                {heroActiveTab === "speed" && (
-                  <div className="space-y-8 animate-fade-in">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div>
-                        <span className="text-xs font-mono uppercase tracking-widest text-[#2ba5b5] font-semibold">
-                          ✦ Lighthouse 100/100 Benchmark
-                        </span>
-                        <h3 className={`text-2xl sm:text-3xl font-bold ${theme.headingFont} mt-1`}>
-                          Sub-Second Execution &amp; Peak Google Vitals
-                        </h3>
-                      </div>
-                      <div className="flex items-center gap-2 bg-emerald-500/20 text-emerald-400 px-4 py-1.5 rounded-full border border-emerald-500/30 text-xs font-mono font-bold">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                        <span>Live Telemetry: 100/100</span>
-                      </div>
-                    </div>
+                {/* Subtitle */}
+                <p className="text-lg md:text-xl text-slate-300 font-normal max-w-xl leading-relaxed">
+                  We build stunning digital experiences that drive success. From bespoke UI/UX
+                  interfaces to enterprise full-stack development and ROI-engineered marketing.
+                </p>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      {[
-                        { label: "Performance", score: "100", color: "text-emerald-400", desc: "Edge CDN & Next.js 15" },
-                        { label: "Accessibility", score: "100", color: "text-emerald-400", desc: "WCAG 2.1 AA Compliant" },
-                        { label: "Best Practices", score: "100", color: "text-emerald-400", desc: "Modern TLS & Security" },
-                        { label: "Search SEO", score: "100", color: "text-emerald-400", desc: "Rich JSON-LD Schema" },
-                      ].map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="p-5 rounded-2xl bg-white/[0.04] border border-white/10 text-center relative overflow-hidden group hover:border-emerald-500/40 transition-all"
-                        >
-                          <div className="w-16 h-16 mx-auto rounded-full border-4 border-emerald-500/30 flex items-center justify-center mb-3">
-                            <span className={`text-2xl font-bold font-mono ${item.color}`}>{item.score}</span>
-                          </div>
-                          <p className="text-xs font-bold font-mono tracking-wide">{item.label}</p>
-                          <p className="text-[11px] opacity-60 mt-1">{item.desc}</p>
-                        </div>
-                      ))}
-                    </div>
+                {/* CTAs */}
+                <div className="flex flex-wrap items-center gap-4 pt-2">
+                  <a
+                    href="#services"
+                    className="px-8 py-4 rounded-xl glow-blue-btn text-white font-bold text-sm tracking-wider uppercase shadow-xl"
+                  >
+                    GET STARTED
+                  </a>
+                  <a
+                    href="#marketing-hub"
+                    className="px-7 py-4 rounded-xl border border-cyan-500/40 bg-[#0b1329]/80 hover:bg-cyan-500/10 text-cyan-300 font-bold text-sm tracking-wide transition-all flex items-center gap-2"
+                  >
+                    <span>Explore Marketing Hub</span>
+                    <span>→</span>
+                  </a>
+                </div>
 
-                    {/* Code comparison preview */}
-                    <div className="p-4 rounded-2xl bg-black/60 border border-white/10 font-mono text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[#2ba5b5] font-bold">⚡ Next.js SSR</span>
-                        <span className="opacity-70">LCP: 0.38s • FCP: 0.22s • CLS: 0.000</span>
-                      </div>
-                      <span className="text-amber-400 text-[11px] bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 font-semibold">
-                        3.2x Faster than WordPress / Webflow
-                      </span>
-                    </div>
+                {/* Live Micro Metric Badges */}
+                <div className="pt-6 grid grid-cols-3 gap-4 border-t border-white/10 max-w-lg">
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-black text-cyan-400">99.4%</div>
+                    <div className="text-xs text-slate-400 font-sans mt-0.5">Client Satisfaction</div>
                   </div>
-                )}
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-black text-blue-400">180+</div>
+                    <div className="text-xs text-slate-400 font-sans mt-0.5">Projects Shipped</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-black text-purple-400">&lt; 0.8s</div>
+                    <div className="text-xs text-slate-400 font-sans mt-0.5">Core Web Vitals</div>
+                  </div>
+                </div>
+              </div>
 
-                {/* TAB 2: UI/UX System */}
-                {heroActiveTab === "design" && (
-                  <div className="space-y-6 animate-fade-in">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <span className="text-xs font-mono uppercase tracking-widest text-[#7b59ef] font-semibold">
-                          ✦ Figma Design Token Engine
-                        </span>
-                        <h3 className={`text-2xl sm:text-3xl font-bold ${theme.headingFont} mt-1`}>
-                          Tailored Design System Tokens
-                        </h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono opacity-70">Interactive Theme Accent:</span>
-                        {["#ff6b4a", "#7b59ef", "#2ba5b5", "#ffc145", "#10b981"].map((color) => (
-                          <button
-                            key={color}
-                            onClick={() => setHeroPaletteColor(color)}
-                            style={{ backgroundColor: color }}
-                            className={`w-6 h-6 rounded-full border-2 transition-transform ${
-                              heroPaletteColor === color ? "scale-125 border-white" : "border-transparent"
-                            }`}
-                            aria-label={`Select accent ${color}`}
-                          />
-                        ))}
-                      </div>
+              {/* Right Column: Hero Visual Asset (Profile with Electric Blue Backdrop) */}
+              <div className="lg:col-span-5 relative">
+                <div className="relative mx-auto max-w-md lg:max-w-none">
+                  {/* Glowing background halo */}
+                  <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-cyan-500/30 via-blue-600/30 to-purple-600/30 blur-2xl -z-10" />
+
+                  {/* Frame Container */}
+                  <div className="relative rounded-3xl overflow-hidden border border-cyan-500/40 shadow-2xl shadow-cyan-500/20 bg-[#0a1128]">
+                    <img
+                      src={heroCreativeImg}
+                      alt="Creative Digital Agency Lead"
+                      className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
+                    />
+
+                    {/* Floating HUD chips */}
+                    <div className="absolute top-4 right-4 bg-[#050914]/85 backdrop-blur-md border border-cyan-400/40 rounded-xl px-3.5 py-2 text-xs flex items-center gap-2 shadow-lg">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span className="font-mono text-cyan-300 font-bold">Top Agency 2026</span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3">
-                        <span className="text-[10px] font-mono opacity-60 uppercase">Primary Button States</span>
-                        <button
-                          style={{ backgroundColor: heroPaletteColor }}
-                          className="w-full py-3 rounded-full font-bold text-xs text-white shadow-lg transition-all hover:opacity-90"
-                        >
-                          Interactive Button Preview
-                        </button>
-                        <button className="w-full py-3 rounded-full font-semibold text-xs border border-white/20 hover:bg-white/10 transition-colors">
-                          Secondary Outline State
-                        </button>
-                      </div>
-
-                      <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3">
-                        <span className="text-[10px] font-mono opacity-60 uppercase">Micro-Interaction Card</span>
-                        <div className="p-4 rounded-xl bg-white/[0.06] border border-white/10 space-y-2">
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="font-bold font-mono">Component #042</span>
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">
-                              Active
-                            </span>
-                          </div>
-                          <p className="text-xs opacity-75">
-                            Smooth 60fps micro-animations built with CSS transforms.
-                          </p>
+                    <div className="absolute bottom-4 left-4 right-4 bg-[#050914]/90 backdrop-blur-md border border-white/15 rounded-2xl p-4 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs text-slate-400 font-mono">Performance Matrix</div>
+                        <div className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
+                          <span>A+ Web Vitals Certified</span>
+                          <span className="text-cyan-400">⚡</span>
                         </div>
                       </div>
-
-                      <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3">
-                        <span className="text-[10px] font-mono opacity-60 uppercase">Design System Specs</span>
-                        <ul className="text-xs space-y-1.5 opacity-80 font-mono">
-                          <li>✦ 120+ Master Figma Components</li>
-                          <li>✦ 8-Point Fluid Spacing Grid</li>
-                          <li>✦ Dynamic Light/Dark Tokens</li>
-                          <li>✦ Tested with Real Screen Readers</li>
-                        </ul>
-                      </div>
+                      <a
+                        href="#contact"
+                        className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-all"
+                      >
+                        Hire Us
+                      </a>
                     </div>
                   </div>
-                )}
-
-                {/* TAB 3: Growth & ROAS */}
-                {heroActiveTab === "growth" && (
-                  <div className="space-y-6 animate-fade-in">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <span className="text-xs font-mono uppercase tracking-widest text-[#ff6b4a] font-semibold">
-                          ✦ Multi-Channel Performance Funnel
-                        </span>
-                        <h3 className={`text-2xl sm:text-3xl font-bold ${theme.headingFont} mt-1`}>
-                          High-Return Ad &amp; SEO Engine
-                        </h3>
-                      </div>
-                      <div className="flex items-center p-1 rounded-full bg-white/10 border border-white/10 text-xs font-mono">
-                        {(["30d", "60d", "90d"] as const).map((period) => (
-                          <button
-                            key={period}
-                            onClick={() => setGrowthTimeframe(period)}
-                            className={`px-3 py-1 rounded-full font-semibold transition-all ${
-                              growthTimeframe === period
-                                ? "bg-white text-black font-bold shadow"
-                                : "opacity-70 hover:opacity-100"
-                            }`}
-                          >
-                            {period.toUpperCase()}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10">
-                        <p className="text-xs font-mono opacity-60 uppercase">Blended ROAS</p>
-                        <p className="text-3xl font-bold text-emerald-400 mt-1">
-                          {growthTimeframe === "30d" ? "2.4x" : growthTimeframe === "60d" ? "3.5x" : "4.2x"}
-                        </p>
-                        <p className="text-xs opacity-70 mt-1">Google PMax &amp; Meta Ads</p>
-                      </div>
-
-                      <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10">
-                        <p className="text-xs font-mono opacity-60 uppercase">CAC Reduction</p>
-                        <p className="text-3xl font-bold text-[#ffc145] mt-1">
-                          {growthTimeframe === "30d" ? "-18%" : growthTimeframe === "60d" ? "-29%" : "-38%"}
-                        </p>
-                        <p className="text-xs opacity-70 mt-1">Landing Page CRO Optimization</p>
-                      </div>
-
-                      <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10">
-                        <p className="text-xs font-mono opacity-60 uppercase">Organic Search Growth</p>
-                        <p className="text-3xl font-bold text-[#2ba5b5] mt-1">
-                          {growthTimeframe === "30d" ? "+95%" : growthTimeframe === "60d" ? "+240%" : "+480%"}
-                        </p>
-                        <p className="text-xs opacity-70 mt-1">Programmatic SEO Strategy</p>
-                      </div>
-                    </div>
-
-                    {/* Visual Curve Chart (SVG) */}
-                    <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10">
-                      <div className="flex justify-between items-center text-xs font-mono opacity-70 mb-2">
-                        <span>Revenue Curve Lift</span>
-                        <span>Compounding Weekly Cohorts</span>
-                      </div>
-                      <svg className="w-full h-24 stroke-emerald-400 fill-emerald-400/10" viewBox="0 0 500 100">
-                        <path
-                          d="M 0 90 Q 120 80, 240 50 T 500 15 L 500 100 L 0 100 Z"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 3. CAPABILITIES MARQUEE */}
-      {/* ========================================================================= */}
-      <div className={`relative w-full overflow-hidden py-4 ${theme.contrastBlockBg} ${theme.contrastBlockText}`}>
-        <div className="animate-marquee whitespace-nowrap flex items-center gap-8 text-xs font-mono uppercase tracking-widest">
-          {[0, 1].map((copyIdx) => (
-            <div key={copyIdx} className="flex items-center gap-8 shrink-0">
-              <span className={`flex items-center gap-2 ${theme.accentSecondary} font-semibold`}>
-                ✦ React 19 &amp; Next.js 15
-              </span>
-              <span className="flex items-center gap-2 font-semibold">
-                ✦ Figma UI/UX Design Systems
-              </span>
-              <span className={`flex items-center gap-2 ${theme.accentPrimary} font-semibold`}>
-                ✦ Google Performance Max Ads
-              </span>
-              <span className="flex items-center gap-2 text-[#2ba5b5] font-semibold">
-                ✦ Technical On-Page SEO
-              </span>
-              <span className="flex items-center gap-2 text-[#7b59ef] font-semibold">
-                ✦ Meta Ads &amp; Creative Strategy
-              </span>
-              <span className="flex items-center gap-2 font-semibold">
-                ✦ E-Commerce &amp; Payment Funnels
-              </span>
-              <span className={`flex items-center gap-2 ${theme.accentSecondary} font-semibold`}>
-                ✦ Conversion Rate Optimization
-              </span>
-              <span className={`flex items-center gap-2 ${theme.accentPrimary} font-semibold`}>
-                ✦ 95+ Core Web Vitals Guaranteed
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 4. THREE CORE PILLARS (SERVICES) */}
-      {/* ========================================================================= */}
-      <section id="services" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <p className={`text-xs font-mono uppercase tracking-widest ${theme.accentPrimary} font-bold`}>
-            What We Do
-          </p>
-          <h2
-            className={`text-3xl sm:text-5xl font-bold ${theme.headingFont} ${theme.textPrimary} tracking-tight`}
-          >
-            One Studio. Three Core Pillars.
-          </h2>
-          <p className={`${theme.textMuted} text-base sm:text-lg`}>
-            We unite Web Development, UI/UX Design, and Digital Marketing into a single cohesive
-            flywheel for exponential business growth.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Pillar 1: Web Development */}
-          <div
-            className={`${theme.cardBg} rounded-[32px] p-8 border ${theme.cardBorder} ${theme.cardHoverBorder} transition-all flex flex-col justify-between relative overflow-hidden group shadow-lg hover:-translate-y-1.5 duration-300`}
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#2ba5b5]/10 rounded-bl-[100px] pointer-events-none" />
-            <div>
-              <div className="w-14 h-14 rounded-2xl bg-[#2ba5b5]/15 border border-[#2ba5b5]/30 flex items-center justify-center mb-6 text-[#2ba5b5] group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="16 18 22 12 16 6" />
-                  <polyline points="8 6 2 12 8 18" />
-                </svg>
-              </div>
-              <div className="inline-block px-3 py-1 rounded-full bg-[#2ba5b5]/15 text-[#2ba5b5] text-xs font-mono font-semibold mb-3">
-                PILLAR 01
-              </div>
-              <h3 className={`text-2xl font-bold ${theme.headingFont} ${theme.textPrimary} mb-3`}>
-                Web Development
-              </h3>
-              <p className={`${theme.textMuted} text-sm leading-relaxed mb-6`}>
-                Engineered for sub-second speeds, rock-solid security, and flawless scalability across
-                phones, tablets, and desktop workstations.
-              </p>
-
-              <div className="space-y-2.5 mb-8">
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className="text-[#2ba5b5] font-bold">✓</span>
-                  <span>React 19 &amp; Next.js 15 Server-Side Rendering (SSR)</span>
-                </div>
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className="text-[#2ba5b5] font-bold">✓</span>
-                  <span>Core Web Vitals &gt; 95+ PageSpeed Guarantee</span>
-                </div>
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className="text-[#2ba5b5] font-bold">✓</span>
-                  <span>E-Commerce &amp; Secure Payment Gateways (Stripe / Razorpay)</span>
-                </div>
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className="text-[#2ba5b5] font-bold">✓</span>
-                  <span>Headless CMS Integration (Sanity, Strapi, WordPress)</span>
-                </div>
-              </div>
-            </div>
-
-            <div className={`pt-6 border-t ${theme.cardBorder}`}>
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {["Next.js", "TypeScript", "Tailwind", "Node.js", "REST / GraphQL"].map((tag) => (
-                  <span
-                    key={tag}
-                    className={`text-[11px] px-2.5 py-1 rounded-md ${theme.pageBg} border ${theme.cardBorder} ${theme.textMuted} font-mono`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <a href="#estimator" className="text-xs font-bold text-[#2ba5b5] hover:underline flex items-center gap-1">
-                <span>Estimate Web Project</span>
-                <span>→</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Pillar 2: UI/UX Design */}
-          <div
-            className={`${theme.cardBg} rounded-[32px] p-8 border ${theme.cardBorder} ${theme.cardHoverBorder} transition-all flex flex-col justify-between relative overflow-hidden group shadow-lg hover:-translate-y-1.5 duration-300`}
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#7b59ef]/10 rounded-bl-[100px] pointer-events-none" />
-            <div>
-              <div className="w-14 h-14 rounded-2xl bg-[#7b59ef]/15 border border-[#7b59ef]/30 flex items-center justify-center mb-6 text-[#7b59ef] group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 19l7-7 3 3-7 7-3-3z" />
-                  <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
-                  <path d="M2 2l7.586 7.586" />
-                  <circle cx="11" cy="11" r="2" />
-                </svg>
-              </div>
-              <div className="inline-block px-3 py-1 rounded-full bg-[#7b59ef]/15 text-[#7b59ef] text-xs font-mono font-semibold mb-3">
-                PILLAR 02
-              </div>
-              <h3 className={`text-2xl font-bold ${theme.headingFont} ${theme.textPrimary} mb-3`}>
-                UI/UX Design
-              </h3>
-              <p className={`${theme.textMuted} text-sm leading-relaxed mb-6`}>
-                Bespoke, human-centric interfaces and design systems crafted to captivate visitors,
-                inspire confidence, and maximize conversions.
-              </p>
-
-              <div className="space-y-2.5 mb-8">
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className="text-[#7b59ef] font-bold">✓</span>
-                  <span>End-to-End User Research &amp; Customer Journey Mapping</span>
-                </div>
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className="text-[#7b59ef] font-bold">✓</span>
-                  <span>Clickable High-Fidelity Figma Prototyping</span>
-                </div>
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className="text-[#7b59ef] font-bold">✓</span>
-                  <span>Scalable Design Systems &amp; Component Tokens</span>
-                </div>
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className="text-[#7b59ef] font-bold">✓</span>
-                  <span>WCAG 2.1 AA Accessibility &amp; Usability Auditing</span>
-                </div>
-              </div>
-            </div>
-
-            <div className={`pt-6 border-t ${theme.cardBorder}`}>
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {["Figma", "Design Tokens", "Wireframing", "Micro-Interactions", "UX Research"].map((tag) => (
-                  <span
-                    key={tag}
-                    className={`text-[11px] px-2.5 py-1 rounded-md ${theme.pageBg} border ${theme.cardBorder} ${theme.textMuted} font-mono`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <a href="#estimator" className="text-xs font-bold text-[#7b59ef] hover:underline flex items-center gap-1">
-                <span>Estimate UI/UX Sprint</span>
-                <span>→</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Pillar 3: Digital Marketing */}
-          <div
-            className={`${theme.cardBg} rounded-[32px] p-8 border ${theme.cardBorder} ${theme.cardHoverBorder} transition-all flex flex-col justify-between relative overflow-hidden group shadow-lg hover:-translate-y-1.5 duration-300`}
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff6b4a]/10 rounded-bl-[100px] pointer-events-none" />
-            <div>
-              <div
-                className={`w-14 h-14 rounded-2xl ${theme.accentPrimaryBg}/15 border ${theme.accentPrimaryBg}/30 flex items-center justify-center mb-6 ${theme.accentPrimary} group-hover:scale-110 transition-transform`}
-              >
-                <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                  <polyline points="17 6 23 6 23 12" />
-                </svg>
-              </div>
-              <div
-                className={`inline-block px-3 py-1 rounded-full ${theme.accentPrimaryBg}/15 ${theme.accentPrimary} text-xs font-mono font-semibold mb-3`}
-              >
-                PILLAR 03
-              </div>
-              <h3 className={`text-2xl font-bold ${theme.headingFont} ${theme.textPrimary} mb-3`}>
-                Digital Marketing
-              </h3>
-              <p className={`${theme.textMuted} text-sm leading-relaxed mb-6`}>
-                Data-driven growth strategies that lower customer acquisition costs (CAC) and deliver
-                measurable, repeatable return on ad spend (ROAS).
-              </p>
-
-              <div className="space-y-2.5 mb-8">
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className={`${theme.accentPrimary} font-bold`}>✓</span>
-                  <span>Google Search, Display &amp; Performance Max Campaigns</span>
-                </div>
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className={`${theme.accentPrimary} font-bold`}>✓</span>
-                  <span>Meta Ads (Instagram / Facebook) High-ROAS Funnels</span>
-                </div>
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className={`${theme.accentPrimary} font-bold`}>✓</span>
-                  <span>Technical, On-Page &amp; Local Google SEO Dominance</span>
-                </div>
-                <div className={`flex items-start gap-2.5 text-xs ${theme.textPrimary}`}>
-                  <span className={`${theme.accentPrimary} font-bold`}>✓</span>
-                  <span>Conversion Rate Optimization (CRO) &amp; A/B Split Testing</span>
-                </div>
-              </div>
-            </div>
-
-            <div className={`pt-6 border-t ${theme.cardBorder}`}>
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {["Google Ads", "Meta Ads", "Technical SEO", "GA4 Analytics", "CRO"].map((tag) => (
-                  <span
-                    key={tag}
-                    className={`text-[11px] px-2.5 py-1 rounded-md ${theme.pageBg} border ${theme.cardBorder} ${theme.textMuted} font-mono`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <a
-                href="#estimator"
-                className={`text-xs font-bold ${theme.accentPrimary} hover:underline flex items-center gap-1`}
-              >
-                <span>Estimate Marketing Campaign</span>
-                <span>→</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 5. INTERACTIVE PORTFOLIO & CASE STUDIES */}
-      {/* ========================================================================= */}
-      <section id="work" className={`py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t ${theme.cardBorder}`}>
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-          <div className="space-y-3">
-            <p className={`text-xs font-mono uppercase tracking-widest ${theme.accentPrimary} font-bold`}>
-              Selected Portfolio
-            </p>
-            <h2 className={`text-3xl sm:text-5xl font-bold ${theme.headingFont} ${theme.textPrimary} tracking-tight`}>
-              Recent Client Canvases.
-            </h2>
-            <p className={`${theme.textMuted} text-sm sm:text-base max-w-xl`}>
-              Explore how our code, design, and growth campaigns drive undeniable business results for
-              our partners.
-            </p>
-          </div>
-
-          {/* Filter Pills */}
-          <div className={`flex flex-wrap gap-2 p-1.5 ${theme.cardBg} rounded-full border ${theme.cardBorder} shadow-sm w-fit`}>
-            {["All", "Web Development", "UI/UX Design", "Digital Marketing"].map((category) => (
-              <button
-                key={category}
-                onClick={() => setActivePortfolioCategory(category)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-                  activePortfolioCategory === category
-                    ? `${theme.accentPrimaryBg} ${theme.accentPrimaryText} shadow-sm font-bold`
-                    : `${theme.textMuted} hover:${theme.textPrimary}`
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Portfolio Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCaseStudies.map((study) => (
-            <div
-              key={study.id}
-              onClick={() => setSelectedCaseStudy(study)}
-              className={`${theme.cardBg} rounded-[32px] p-6 border ${theme.cardBorder} ${theme.cardHoverBorder} cursor-pointer flex flex-col justify-between group shadow-lg hover:-translate-y-2 transition-all duration-300`}
-            >
-              <div>
-                {/* Header tag & metric */}
-                <div className="flex items-center justify-between mb-5">
-                  <span
-                    className={`text-[11px] font-mono font-semibold px-3 py-1 rounded-full ${theme.pageBg} ${theme.textPrimary} border ${theme.cardBorder}`}
-                  >
-                    {study.category}
-                  </span>
-                  <div className="text-right">
-                    <span className={`text-lg font-bold ${theme.headingFont} ${theme.accentPrimary}`}>
-                      {study.metric}
-                    </span>
-                    <span className={`block text-[10px] ${theme.textMuted} font-mono`}>
-                      {study.metricLabel}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Card visual banner mockup with browser chrome */}
-                <div
-                  className={`w-full h-48 rounded-2xl bg-gradient-to-br ${study.badgeGradient} text-white p-4 flex flex-col justify-between mb-5 relative shadow-inner overflow-hidden group-hover:shadow-xl transition-shadow`}
-                >
-                  <div className="flex justify-between items-center pb-2 border-b border-white/15">
-                    <div className="flex gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-white/40" />
-                      <div className="w-2 h-2 rounded-full bg-white/40" />
-                      <div className="w-2 h-2 rounded-full bg-white/40" />
-                    </div>
-                    <span className="text-[10px] font-mono bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
-                      {study.domain}
-                    </span>
-                  </div>
-
-                  <div className="my-auto py-2">
-                    <h4 className={`text-xl font-bold ${theme.headingFont} leading-snug`}>
-                      {study.title}
-                    </h4>
-                    <p className="text-xs text-white/90 line-clamp-2 mt-1.5 opacity-90">
-                      {study.tagline}
-                    </p>
-                  </div>
-
-                  <div className="flex justify-between items-center text-[10px] font-mono text-white/75 pt-1">
-                    <span>Client: {study.client}</span>
-                    <span className="underline">Click to view →</span>
-                  </div>
-                </div>
-
-                {/* Tech tags */}
-                <div className="flex flex-wrap gap-1.5 mb-6">
-                  {study.tags.slice(0, 3).map((tag) => (
-                    <span
-                      key={tag}
-                      className={`text-[10px] px-2.5 py-0.5 rounded-md ${theme.pageBg} ${theme.textMuted} border ${theme.cardBorder} font-mono`}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  {study.tags.length > 3 && (
-                    <span
-                      className={`text-[10px] px-2.5 py-0.5 rounded-md ${theme.pageBg} ${theme.textMuted} border ${theme.cardBorder} font-mono`}
-                    >
-                      +{study.tags.length - 3} more
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Action trigger */}
-              <div className={`pt-4 border-t ${theme.cardBorder} flex items-center justify-between`}>
-                <span
-                  className={`text-xs font-bold ${theme.textPrimary} group-hover:${theme.accentPrimary} transition-colors`}
-                >
-                  View Full Case Study
-                </span>
-                <div
-                  className={`w-8 h-8 rounded-full ${theme.pageBg} border ${theme.cardBorder} flex items-center justify-center ${theme.textPrimary} group-hover:${theme.accentPrimaryBg} group-hover:${theme.accentPrimaryText} transition-all`}
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CASE STUDY MODAL */}
-      {selectedCaseStudy && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div
-            className={`${theme.cardBg} border ${theme.cardBorder} rounded-[32px] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative space-y-6 shadow-2xl`}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedCaseStudy(null)}
-              className={`absolute top-6 right-6 p-2 rounded-full ${theme.pageBg} border ${theme.cardBorder} ${theme.textPrimary} hover:scale-110 transition-transform`}
-              aria-label="Close Case Study"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Modal Header */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span
-                  className={`text-xs font-mono px-3 py-1 rounded-full ${theme.pageBg} border ${theme.cardBorder} ${theme.accentPrimary} font-semibold`}
-                >
-                  {selectedCaseStudy.category}
-                </span>
-                <span className={`text-xs ${theme.textMuted} font-mono`}>• {selectedCaseStudy.client}</span>
-              </div>
-              <h3 className={`text-2xl sm:text-3xl font-bold ${theme.headingFont} ${theme.textPrimary}`}>
-                {selectedCaseStudy.title}
-              </h3>
-            </div>
-
-            {/* Key Metric highlight banner */}
-            <div className={`p-4 rounded-2xl ${theme.pageBg} border ${theme.cardBorder} flex items-center justify-between`}>
-              <div>
-                <p className={`text-xs ${theme.textMuted} uppercase tracking-widest font-mono font-semibold`}>
-                  Key Achievement
-                </p>
-                <p className={`text-3xl font-bold ${theme.headingFont} ${theme.accentPrimary}`}>
-                  {selectedCaseStudy.metric}
-                </p>
-              </div>
-              <span className={`text-xs font-medium ${theme.textPrimary} font-mono`}>
-                {selectedCaseStudy.metricLabel}
-              </span>
-            </div>
-
-            {/* Problem & Solution */}
-            <div className="space-y-4 text-sm leading-relaxed">
-              <div>
-                <h4 className={`text-xs font-mono uppercase tracking-widest ${theme.accentPrimary} mb-1 font-semibold`}>
-                  The Challenge
-                </h4>
-                <p className={`p-4 rounded-2xl ${theme.pageBg} border ${theme.cardBorder} ${theme.textMuted}`}>
-                  {selectedCaseStudy.challenge}
-                </p>
-              </div>
-              <div>
-                <h4 className={`text-xs font-mono uppercase tracking-widest ${theme.accentPrimary} mb-1 font-semibold`}>
-                  Our Strategy &amp; Solution
-                </h4>
-                <p className={`p-4 rounded-2xl ${theme.pageBg} border ${theme.cardBorder} ${theme.textMuted}`}>
-                  {selectedCaseStudy.solution}
-                </p>
-              </div>
-            </div>
-
-            {/* Deliverables & Results */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className={`${theme.pageBg} p-4 rounded-2xl border ${theme.cardBorder}`}>
-                <h4 className={`text-xs font-mono uppercase tracking-widest ${theme.textPrimary} mb-2 font-semibold`}>
-                  Deliverables
-                </h4>
-                <ul className={`space-y-1.5 text-xs ${theme.textMuted}`}>
-                  {selectedCaseStudy.deliverables.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-1.5">
-                      <span className={`${theme.accentPrimary} font-bold`}>✦</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className={`${theme.pageBg} p-4 rounded-2xl border ${theme.cardBorder}`}>
-                <h4 className={`text-xs font-mono uppercase tracking-widest ${theme.textPrimary} mb-2 font-semibold`}>
-                  Verified Results
-                </h4>
-                <ul className={`space-y-1.5 text-xs ${theme.textMuted}`}>
-                  {selectedCaseStudy.results.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-1.5">
-                      <span className="text-[#2ba5b5] font-bold">✓</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Modal Footer CTA */}
-            <div className={`pt-4 border-t ${theme.cardBorder} flex flex-col sm:flex-row gap-3`}>
-              <a
-                href="#estimator"
-                onClick={() => setSelectedCaseStudy(null)}
-                className={`flex-1 py-3 text-center rounded-full font-bold text-xs ${theme.accentPrimaryBg} ${theme.accentPrimaryText} transition-all shadow-md`}
-              >
-                Estimate Similar Project
-              </a>
-              <button
-                onClick={() => setSelectedCaseStudy(null)}
-                className={`py-3 px-6 rounded-full font-semibold text-xs ${theme.pageBg} border ${theme.cardBorder} ${theme.textPrimary}`}
-              >
-                Close Window
-              </button>
-            </div>
-          </div>
-        </div>
+        </section>
       )}
 
       {/* ========================================================================= */}
-      {/* 6. COMPARISON MATRIX (WHY NEXUS CREATIVE) */}
+      {/* ABOUT SECTION: WHO WE ARE */}
       {/* ========================================================================= */}
-      <section id="compare" className={`py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t ${theme.cardBorder}`}>
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <p className={`text-xs font-mono uppercase tracking-widest ${theme.accentPrimary} font-bold`}>
-            Agency Comparison
-          </p>
-          <h2 className={`text-3xl sm:text-5xl font-bold ${theme.headingFont} ${theme.textPrimary} tracking-tight`}>
-            Why Modern Founders Choose Us.
-          </h2>
-          <p className={`${theme.textMuted} text-base sm:text-lg`}>
-            See how our agile engineering studio contrasts against legacy agencies and solo freelancers.
-          </p>
-        </div>
-
-        <div className={`${theme.cardBg} rounded-[32px] border ${theme.cardBorder} overflow-x-auto shadow-xl`}>
-          <table className="w-full text-left border-collapse min-w-[650px]">
-            <thead>
-              <tr className={`border-b ${theme.cardBorder} ${theme.contrastBlockBg} ${theme.contrastBlockText}`}>
-                <th className="p-5 text-xs font-mono uppercase tracking-wider">Feature / Standard</th>
-                <th className={`p-5 text-xs font-mono uppercase tracking-wider ${theme.accentPrimary} font-bold`}>
-                  ✦ Nexus Creative
-                </th>
-                <th className="p-5 text-xs font-mono uppercase tracking-wider opacity-60">Traditional Agencies</th>
-                <th className="p-5 text-xs font-mono uppercase tracking-wider opacity-60">Solo Freelancers</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-inherit">
-              {COMPARISONS.map((row, idx) => (
-                <tr key={idx} className="hover:bg-black/[0.02] transition-colors text-xs sm:text-sm">
-                  <td className="p-5 font-bold">{row.feature}</td>
-                  <td className={`p-5 font-semibold ${theme.accentPrimary} bg-emerald-500/[0.04]`}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-500 font-bold">✓</span>
-                      <span>{row.nexus}</span>
-                    </div>
-                  </td>
-                  <td className={`p-5 ${theme.textMuted}`}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-rose-400 font-bold">✕</span>
-                      <span>{row.traditional}</span>
-                    </div>
-                  </td>
-                  <td className={`p-5 ${theme.textMuted}`}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-amber-400 font-bold">~</span>
-                      <span>{row.freelancer}</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 7. INTERACTIVE PROJECT COST ESTIMATOR */}
-      {/* ========================================================================= */}
-      <section id="estimator" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          className={`${theme.cardBg} rounded-[40px] p-6 sm:p-12 border ${theme.cardBorder} relative overflow-hidden shadow-2xl`}
+      {(viewMode === "unified" || viewMode === "agency") && (
+        <section
+          id="about"
+          className="relative py-20 md:py-24 bg-[#040815] border-b border-white/10 overflow-hidden"
         >
-          <div className="max-w-3xl mb-12">
-            <div
-              className={`inline-flex items-center gap-2 px-4 py-1 rounded-full ${theme.accentPrimaryBg}/15 ${theme.accentPrimary} text-xs font-mono font-semibold mb-3`}
-            >
-              <span>Interactive Pricing Engine</span>
-            </div>
-            <h2 className={`text-3xl sm:text-5xl font-bold ${theme.headingFont} ${theme.textPrimary} tracking-tight`}>
-              Instant Project <span className={`italic ${theme.accentPrimary}`}>Cost Estimator</span>.
-            </h2>
-            <p className={`${theme.textMuted} text-sm sm:text-base mt-2`}>
-              Select your requirements below to calculate a transparent ballpark budget. No hidden fees or
-              gatekeeping.
-            </p>
-          </div>
+          {/* Subtle Glow Top Divider */}
+          <div className="glow-divider w-full absolute top-0 left-0" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left Options Controls */}
-            <div className="lg:col-span-7 space-y-8">
-              {/* Step 1: Select Service Pillar */}
-              <div className="space-y-3">
-                <label className={`text-xs font-mono uppercase tracking-wider ${theme.textMuted} font-semibold block`}>
-                  Step 1: Choose Primary Service Pillar
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  {[
-                    { id: "all", label: "All-in-One", sub: "Web + UI + Ads" },
-                    { id: "web-dev", label: "Web Dev", sub: "Next.js / React" },
-                    { id: "ui-ux", label: "UI/UX Design", sub: "Figma System" },
-                    { id: "marketing", label: "Marketing", sub: "Google & Meta" },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setEstService(item.id as ServicePillar)}
-                      className={`p-3.5 rounded-2xl border text-left transition-all ${
-                        estService === item.id
-                          ? `${theme.contrastBlockBg} ${theme.contrastBlockText} border-transparent shadow-md`
-                          : `${theme.cardBg} ${theme.cardBorder} ${theme.textPrimary} ${theme.cardHoverBorder}`
-                      }`}
-                    >
-                      <p className="text-xs font-bold">{item.label}</p>
-                      <p className={`text-[10px] mt-0.5 ${estService === item.id ? "text-amber-400" : theme.textMuted}`}>
-                        {item.sub}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 2: Project Scope */}
-              <div className="space-y-3">
-                <label className={`text-xs font-mono uppercase tracking-wider ${theme.textMuted} font-semibold block`}>
-                  Step 2: Project Scale &amp; Complexity
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { id: "starter", name: "Starter MVP", desc: "1-5 Pages or landing flow" },
-                    { id: "growth", name: "Growth Scale", desc: "Full custom web + SEO (Recommended)" },
-                    { id: "enterprise", name: "Enterprise Custom", desc: "Advanced apps & multi-funnels" },
-                  ].map((scope) => (
-                    <button
-                      key={scope.id}
-                      type="button"
-                      onClick={() => setEstScope(scope.id as ScopeTier)}
-                      className={`p-4 rounded-2xl border text-left transition-all ${
-                        estScope === scope.id
-                          ? `${theme.accentPrimaryBg} ${theme.accentPrimaryText} shadow-md`
-                          : `${theme.cardBg} ${theme.cardBorder} ${theme.textPrimary} ${theme.cardHoverBorder}`
-                      }`}
-                    >
-                      <p className="text-xs font-bold">{scope.name}</p>
-                      <p className={`text-[11px] mt-1 ${estScope === scope.id ? "opacity-90" : theme.textMuted}`}>
-                        {scope.desc}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 3: Urgency / Timeline */}
-              <div className="space-y-3">
-                <label className={`text-xs font-mono uppercase tracking-wider ${theme.textMuted} font-semibold block`}>
-                  Step 3: Timeline Requirements
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { id: "urgent", name: "Urgent Sprint", time: "7–14 Days" },
-                    { id: "standard", name: "Standard", time: "3–4 Weeks" },
-                    { id: "flexible", name: "Flexible", time: "6+ Weeks" },
-                  ].map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setEstTimeline(t.id as TimelineUrgency)}
-                      className={`p-3.5 rounded-2xl border text-center transition-all ${
-                        estTimeline === t.id
-                          ? `${theme.contrastBlockBg} ${theme.contrastBlockText} border-transparent`
-                          : `${theme.cardBg} ${theme.cardBorder} ${theme.textPrimary} ${theme.cardHoverBorder}`
-                      }`}
-                    >
-                      <p className="text-xs font-bold">{t.name}</p>
-                      <p className={`text-[11px] font-mono mt-0.5 ${estTimeline === t.id ? "text-amber-400" : "text-[#2ba5b5]"}`}>
-                        {t.time}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 4: Optional Add-ons */}
-              <div className="space-y-3">
-                <label className={`text-xs font-mono uppercase tracking-wider ${theme.textMuted} font-semibold block`}>
-                  Step 4: Strategic Growth Add-ons
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {[
-                    { key: "seo", label: "Technical SEO & Schema Setup", cost: "+₹6,000" },
-                    { key: "cms", label: "Headless Content CMS (Sanity)", cost: "+₹8,000" },
-                    { key: "ads", label: "Google & Meta Ads Strategy", cost: "+₹10,000" },
-                    { key: "speed", label: "Ultra-Fast Load (<0.8s) Tuning", cost: "+₹4,000" },
-                  ].map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => toggleAddon(item.key)}
-                      className={`p-3 rounded-2xl border flex items-center justify-between text-left transition-all ${
-                        estAddons[item.key]
-                          ? `${theme.pageBg} border-indigo-500/50 ${theme.textPrimary}`
-                          : `${theme.cardBg} ${theme.cardBorder} ${theme.textMuted}`
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-4 h-4 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                            estAddons[item.key]
-                              ? `${theme.accentPrimaryBg} ${theme.accentPrimaryText}`
-                              : `border ${theme.cardBorder}`
-                          }`}
-                        >
-                          {estAddons[item.key] && "✓"}
-                        </div>
-                        <span className="text-xs font-semibold">{item.label}</span>
-                      </div>
-                      <span className={`text-[11px] font-mono ${theme.accentPrimary} font-bold`}>
-                        {item.cost}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Live Breakdown Card */}
-            <div
-              className={`lg:col-span-5 ${theme.contrastBlockBg} ${theme.contrastBlockText} rounded-[32px] p-6 sm:p-8 space-y-6 shadow-2xl relative border border-white/10`}
-            >
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <span className="text-xs font-mono uppercase tracking-wider opacity-80 font-semibold">
-                  Estimated Budget
-                </span>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono font-bold">
-                  Live Calculated
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto text-center space-y-7">
+              {/* Requested Status Pill */}
+              <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-cyan-950/70 border border-cyan-500/40 text-xs font-mono text-cyan-300 shadow-xl shadow-cyan-500/10">
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="font-semibold tracking-wide">
+                  Nexuscreative.site • Award-Winning Studio • Web Dev • UI/UX • Growth
                 </span>
               </div>
 
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <span className={`text-4xl sm:text-5xl font-bold ${theme.headingFont}`}>
-                    ₹{calculateEstimate()}
-                  </span>
-                  <span className="text-xs opacity-60 font-mono">INR</span>
-                </div>
-                <p className="text-xs opacity-70 mt-2">
-                  *Transparent ballpark estimate including development, custom design system, and verified milestone
-                  deliveries.
-                </p>
-              </div>
-
-              {/* Selected summary */}
-              <div className="space-y-2.5 text-xs bg-white/[0.06] p-4 rounded-2xl border border-white/[0.08]">
-                <div className="flex justify-between">
-                  <span className="opacity-60">Pillar:</span>
-                  <span className="font-semibold uppercase">{estService}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="opacity-60">Scale:</span>
-                  <span className="font-semibold uppercase">{estScope}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="opacity-60">Timeline:</span>
-                  <span className={`font-semibold ${theme.accentSecondary} uppercase`}>{estTimeline}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="opacity-60">Active Add-ons:</span>
-                  <span className={`font-semibold ${theme.accentPrimary} font-mono`}>
-                    {Object.values(estAddons).filter(Boolean).length} Selected
-                  </span>
-                </div>
-              </div>
-
-              {/* Direct Actions */}
-              <div className="space-y-3 pt-2">
-                <a
-                  href={getWhatsAppUrl()}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-4 rounded-full font-bold text-xs text-white bg-[#25D366] hover:bg-[#20ba59] flex items-center justify-center gap-2 shadow-lg transition-all"
-                >
-                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
-                    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.83 2.41c-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.3a8.163 8.163 0 01-1.26-4.49c0-4.54 3.7-8.24 8.25-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.32z" />
-                  </svg>
-                  <span>Send Estimate to WhatsApp</span>
-                </a>
-
-                <a
-                  href="#contact"
-                  className="w-full py-3.5 rounded-full font-semibold text-xs opacity-90 hover:opacity-100 bg-white/10 hover:bg-white/20 flex items-center justify-center gap-1.5 transition-all"
-                >
-                  <span>Submit Inquiry Form Below</span>
-                  <span>↓</span>
-                </a>
-              </div>
-
-              <div className="pt-2 text-center">
-                <p className="text-[11px] opacity-70">
-                  Prefer a direct phone conversation? Call{" "}
-                  <a href="tel:7010231792" className={`font-semibold hover:underline ${theme.accentSecondary}`}>
-                    +91 70102 31792
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 8. TRANSPARENT PRICING PLANS */}
-      {/* ========================================================================= */}
-      <section id="pricing" className={`py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t ${theme.cardBorder}`}>
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <p className={`text-xs font-mono uppercase tracking-widest ${theme.accentPrimary} font-bold`}>
-            Predictable Investments
-          </p>
-          <h2 className={`text-3xl sm:text-5xl font-bold ${theme.headingFont} ${theme.textPrimary} tracking-tight`}>
-            Curated Studio Packages.
-          </h2>
-          <p className={`${theme.textMuted} text-sm sm:text-base`}>
-            Whether you need a focused sprint or continuous monthly growth, we offer transparent, high-ROI
-            agreements.
-          </p>
-
-          {/* Toggle Switch */}
-          <div
-            className={`inline-flex items-center p-1.5 ${theme.cardBg} rounded-full border ${theme.cardBorder} shadow-sm mt-6`}
-          >
-            <button
-              onClick={() => setPricingPeriod("project")}
-              className={`px-5 py-2 rounded-full text-xs font-semibold transition-all ${
-                pricingPeriod === "project"
-                  ? `${theme.accentPrimaryBg} ${theme.accentPrimaryText} shadow-sm font-bold`
-                  : `${theme.textMuted} hover:${theme.textPrimary}`
-              }`}
-            >
-              Fixed Project Pricing
-            </button>
-            <button
-              onClick={() => setPricingPeriod("retainer")}
-              className={`px-5 py-2 rounded-full text-xs font-semibold transition-all ${
-                pricingPeriod === "retainer"
-                  ? `${theme.accentPrimaryBg} ${theme.accentPrimaryText} shadow-sm font-bold`
-                  : `${theme.textMuted} hover:${theme.textPrimary}`
-              }`}
-            >
-              Monthly Retainer
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-          {PRICING_TIERS.map((tier) => (
-            <div
-              key={tier.name}
-              className={`rounded-[32px] p-8 border flex flex-col justify-between relative transition-all duration-300 ${
-                tier.popular
-                  ? `${theme.contrastBlockBg} ${theme.contrastBlockText} border-transparent shadow-2xl scale-[1.03]`
-                  : `${theme.cardBg} ${theme.textPrimary} ${theme.cardBorder} shadow-sm ${theme.cardHoverBorder} hover:-translate-y-1.5`
-              }`}
-            >
-              {tier.popular && (
-                <div
-                  className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full ${theme.accentPrimaryBg} ${theme.accentPrimaryText} text-[11px] font-bold uppercase tracking-widest shadow-md`}
-                >
-                  Most Popular Choice
-                </div>
-              )}
-
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`text-2xl font-bold ${theme.headingFont}`}>{tier.name}</h3>
-                  <span
-                    className={`text-[10px] font-mono px-3 py-1 rounded-full font-semibold ${
-                      tier.popular
-                        ? "bg-white/10 text-white"
-                        : `${theme.pageBg} ${theme.accentPrimary} border ${theme.cardBorder}`
-                    }`}
-                  >
-                    {tier.badge}
-                  </span>
-                </div>
-
-                <p
-                  className={`text-xs mb-6 leading-relaxed min-h-[36px] ${
-                    tier.popular ? "opacity-80" : theme.textMuted
-                  }`}
-                >
-                  {tier.description}
-                </p>
-
-                <div
-                  className={`mb-6 p-5 rounded-2xl border ${
-                    tier.popular ? "bg-white/5 border-white/10" : `${theme.pageBg} ${theme.cardBorder}`
-                  }`}
-                >
-                  <p className={`text-xs font-mono mb-1 ${tier.popular ? "opacity-60" : theme.textMuted}`}>
-                    {pricingPeriod === "project" ? "One-Time Investment" : "Monthly Retainer"}
-                  </p>
-                  <p className={`text-3xl font-bold ${theme.headingFont}`}>
-                    {pricingPeriod === "project" ? tier.projectPrice : tier.retainerPrice}
-                  </p>
-                  <p className={`text-[11px] font-mono mt-1 ${theme.accentPrimary}`}>
-                    Est. Turnaround: {tier.timeline}
-                  </p>
-                </div>
-
-                <div className="space-y-3 mb-8">
-                  <p
-                    className={`text-[11px] font-mono uppercase tracking-wider font-semibold ${
-                      tier.popular ? "opacity-70" : theme.textMuted
-                    }`}
-                  >
-                    Included Deliverables:
-                  </p>
-                  {tier.features.map((feat, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 text-xs">
-                      <span className="text-emerald-400 font-bold shrink-0">✓</span>
-                      <span className={tier.popular ? "opacity-90" : theme.textPrimary}>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={`pt-6 border-t ${tier.popular ? "border-white/10" : theme.cardBorder}`}>
-                <a
-                  href="#contact"
-                  className={`w-full py-3.5 rounded-full text-center font-bold text-xs flex items-center justify-center transition-all ${
-                    tier.popular
-                      ? `${theme.accentPrimaryBg} ${theme.accentPrimaryText} shadow-md hover:scale-105`
-                      : `${theme.contrastBlockBg} ${theme.contrastBlockText} hover:opacity-90`
-                  }`}
-                >
-                  {tier.ctaText}
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 9. CLIENT TESTIMONIALS */}
-      {/* ========================================================================= */}
-      <section id="reviews" className={`py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t ${theme.cardBorder}`}>
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <p className={`text-xs font-mono uppercase tracking-widest ${theme.accentPrimary} font-bold`}>
-            Client Feedback
-          </p>
-          <h2 className={`text-3xl sm:text-5xl font-bold ${theme.headingFont} ${theme.textPrimary} tracking-tight`}>
-            Backed by Ambitious Founders.
-          </h2>
-          <p className={`${theme.textMuted} text-sm sm:text-base`}>
-            Here's what our partners say about our development speed, design polish, and measurable revenue lift.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {TESTIMONIALS.map((t, idx) => (
-            <div
-              key={idx}
-              className={`${theme.cardBg} rounded-[32px] p-8 border ${theme.cardBorder} flex flex-col justify-between space-y-6 shadow-md hover:shadow-xl transition-all duration-300`}
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-[#ffc145]">
-                    {[...Array(t.rating)].map((_, i) => (
-                      <span key={i} className="text-base">
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                  <span
-                    className={`text-[11px] font-mono px-3 py-1 rounded-full ${theme.pageBg} ${theme.accentPrimary} border ${theme.cardBorder} font-semibold`}
-                  >
-                    {t.highlight}
-                  </span>
-                </div>
-
-                <p className={`${theme.textPrimary} text-base leading-relaxed italic ${theme.headingFont}`}>
-                  "{t.content}"
-                </p>
-              </div>
-
-              <div className={`pt-4 border-t ${theme.cardBorder} flex items-center justify-between`}>
-                <div>
-                  <h4 className={`font-bold text-sm ${theme.textPrimary}`}>{t.name}</h4>
-                  <p className={`text-xs ${theme.textMuted}`}>
-                    {t.role} • {t.company}
-                  </p>
-                </div>
-                <span
-                  className={`text-[11px] font-mono ${theme.accentPrimary} bg-white/10 px-3 py-1 rounded-full font-semibold border ${theme.cardBorder}`}
-                >
-                  {t.service}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 10. PROVEN 4-STEP PROCESS */}
-      {/* ========================================================================= */}
-      <section
-        className={`py-20 ${theme.contrastBlockBg} ${theme.contrastBlockText} rounded-[40px] max-w-7xl mx-auto px-6 sm:px-12 my-12 shadow-2xl border border-white/10`}
-      >
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <p className={`text-xs font-mono uppercase tracking-widest ${theme.accentSecondary} font-bold`}>
-            How We Operate
-          </p>
-          <h2 className={`text-3xl sm:text-5xl font-bold ${theme.headingFont} tracking-tight`}>
-            Four Steps. Zero Surprises.
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            {
-              step: "01",
-              title: "Discovery & Strategy",
-              desc: "Deep dive into your business model, customer personas, competitor benchmarks, and conversion metrics.",
-              accent: theme.accentSecondary,
-            },
-            {
-              step: "02",
-              title: "UI/UX & Prototyping",
-              desc: "Interactive Figma wireframes and visual design prototypes approved before writing any production code.",
-              accent: "text-[#7b59ef]",
-            },
-            {
-              step: "03",
-              title: "High-Speed Development",
-              desc: "Modern Next.js / React engineering, responsive testing across all device viewports, and 95+ PageSpeed.",
-              accent: "text-[#2ba5b5]",
-            },
-            {
-              step: "04",
-              title: "Launch & Ad Growth",
-              desc: "Production release, search engine indexing, ad campaigns rollout, and continuous weekly ROAS optimization.",
-              accent: theme.accentPrimary,
-            },
-          ].map((item) => (
-            <div
-              key={item.step}
-              className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 space-y-4 hover:border-white/25 transition-colors"
-            >
-              <span className={`text-4xl font-bold ${theme.headingFont} ${item.accent}`}>{item.step}</span>
-              <h3 className={`text-lg font-bold ${theme.headingFont}`}>{item.title}</h3>
-              <p className="text-xs opacity-75 leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 11. FREQUENTLY ASKED QUESTIONS (FAQ) */}
-      {/* ========================================================================= */}
-      <section id="faq" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 space-y-4">
-          <p className={`text-xs font-mono uppercase tracking-widest ${theme.accentPrimary} font-bold`}>
-            Common Queries
-          </p>
-          <h2 className={`text-3xl sm:text-5xl font-bold ${theme.headingFont} ${theme.textPrimary} tracking-tight`}>
-            Frequently Asked Questions.
-          </h2>
-          <p className={`${theme.textMuted} text-sm sm:text-base`}>
-            Everything you need to know about partnering with our web development, UI/UX, and marketing
-            team.
-          </p>
-
-          {/* Filter pills */}
-          <div className="flex flex-wrap justify-center gap-2 pt-4">
-            {["All", "General", "Web Dev", "UI/UX", "Marketing", "Pricing"].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setFaqFilter(cat)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  faqFilter === cat
-                    ? `${theme.accentPrimaryBg} ${theme.accentPrimaryText} font-bold shadow-sm`
-                    : `${theme.cardBg} ${theme.textMuted} border ${theme.cardBorder}`
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {filteredFaqs.map((faq, idx) => (
-            <div
-              key={idx}
-              className={`${theme.cardBg} rounded-3xl border ${theme.cardBorder} overflow-hidden transition-all shadow-sm`}
-            >
-              <button
-                onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
-                className="w-full p-6 text-left flex items-center justify-between gap-4"
-              >
-                <span className={`font-bold text-base ${theme.textPrimary} ${theme.headingFont}`}>
-                  {faq.q}
-                </span>
-                <span className={`${theme.accentPrimary} text-2xl font-bold`}>
-                  {openFaqIndex === idx ? "−" : "+"}
-                </span>
-              </button>
-              {openFaqIndex === idx && (
-                <div
-                  className={`px-6 pb-6 text-xs sm:text-sm ${theme.textMuted} leading-relaxed border-t ${theme.cardBorder} pt-4 animate-fade-in`}
-                >
-                  {faq.a}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 12. CONTACT & INQUIRY FORM */}
-      {/* ========================================================================= */}
-      <section id="contact" className={`py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t ${theme.cardBorder}`}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left Column: Direct channels */}
-          <div className="lg:col-span-5 space-y-8">
-            <div className="space-y-4">
-              <div
-                className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${theme.accentPrimaryBg}/15 ${theme.accentPrimary} text-xs font-mono font-semibold`}
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Now Accepting Q2/Q3 Client Projects</span>
-              </div>
-              <h2 className={`text-3xl sm:text-5xl font-bold ${theme.headingFont} ${theme.textPrimary} tracking-tight`}>
-                Let's Build Something <span className={`italic ${theme.accentPrimary}`}>Remarkable</span>.
+              {/* Requested Headline */}
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white leading-tight">
+                We Engineer High-Performing{" "}
+                <span className="bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent text-glow-cyan">
+                  Web Applications, Bespoke UI/UX,
+                </span>{" "}
+                &amp; Scalable Marketing.
               </h2>
-              <p className={`${theme.textMuted} text-sm sm:text-base leading-relaxed`}>
-                Whether you need a high-performance web redesign, bespoke UI/UX prototyping, or
-                high-ROAS marketing funnels, we're here to help.
+
+              {/* Requested Subtitle / Paragraph */}
+              <p className="text-base sm:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto font-normal">
+                Hand-crafted web applications, high-converting Figma design systems, and data-driven
+                ad campaigns built for founders who refuse generic templates.
+              </p>
+
+              {/* Core Philosophy Highlights Grid */}
+              <div className="pt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                <div className="glass-cyber-card rounded-2xl p-6 border border-cyan-500/30">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-xl font-bold mb-3">
+                    ⚡
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-1">Sub-Second Performance</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Zero bloat. Built from scratch with React 19, Vite, and Next.js for flawless 95+ Core Web Vitals.
+                  </p>
+                </div>
+
+                <div className="glass-cyber-card rounded-2xl p-6 border border-purple-500/30">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center text-xl font-bold mb-3">
+                    🎨
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-1">Bespoke UI/UX Systems</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Meticulously organized Figma token architectures, accessible WCAG color scales, and human-first friction-free flows.
+                  </p>
+                </div>
+
+                <div className="glass-cyber-card rounded-2xl p-6 border border-blue-500/30">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-xl font-bold mb-3">
+                    📈
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-1">Algorithmic Growth</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Full-funnel Google Performance Max and Meta Advantage+ campaigns engineered for verifiable blended ROAS.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SECTION 2: TEMPLATE 1 - "UI/UX LAYOUT" 3-CARD SHOWCASE */}
+      {/* ========================================================================= */}
+      {(viewMode === "unified" || viewMode === "agency") && (
+        <section id="services" className="py-20 md:py-28 relative bg-[#060a17]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Header Title matching Template 1 */}
+            <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+              <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                Core Service Capabilities
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-white">
+                UI/UX LAYOUT
+              </h2>
+              <p className="text-slate-400 text-base md:text-lg">
+                Crafted with mathematical precision, psychological empathy, and high-performance
+                modern code.
               </p>
             </div>
 
-            {/* Direct contact cards */}
-            <div className="space-y-4">
-              <a
-                href="https://wa.me/917010231792"
-                target="_blank"
-                rel="noreferrer"
-                className={`flex items-center gap-4 p-4 rounded-3xl ${theme.cardBg} border ${theme.cardBorder} hover:border-[#25D366] transition-all group shadow-sm`}
-              >
-                <div className="w-12 h-12 rounded-2xl bg-[#25D366]/15 flex items-center justify-center text-[#25D366] group-hover:scale-110 transition-transform">
-                  <svg className="w-6 h-6 fill-[#25D366]" viewBox="0 0 24 24">
-                    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.83 2.41c-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.3a8.163 8.163 0 01-1.26-4.49c0-4.54 3.7-8.24 8.25-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.32z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className={`text-xs ${theme.textMuted} font-mono`}>Chat Directly via WhatsApp</p>
-                  <p className={`text-sm font-bold ${theme.textPrimary}`}>+91 70102 31792</p>
-                </div>
-              </a>
-
-              <a
-                href="mailto:RBWealthandrealty@gmail.com"
-                className={`flex items-center gap-4 p-4 rounded-3xl ${theme.cardBg} border ${theme.cardBorder} hover:border-[#ff6b4a] transition-all group shadow-sm`}
-              >
+            {/* 3 Glowing Service Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {UI_UX_SERVICES.map((srv) => (
                 <div
-                  className={`w-12 h-12 rounded-2xl ${theme.accentPrimaryBg}/15 flex items-center justify-center ${theme.accentPrimary} group-hover:scale-110 transition-transform`}
+                  key={srv.id}
+                  className="glass-cyber-card rounded-3xl p-8 flex flex-col justify-between group relative overflow-hidden"
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className={`text-xs ${theme.textMuted} font-mono`}>Official Email</p>
-                  <p className={`text-sm font-bold ${theme.textPrimary}`}>RBWealthandrealty@gmail.com</p>
-                </div>
-              </a>
+                  {/* Subtle top light bar */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent group-hover:via-cyan-400 transition-all" />
 
-              <a
-                href="https://nexuscreative.site"
-                target="_blank"
-                rel="noreferrer"
-                className={`flex items-center gap-4 p-4 rounded-3xl ${theme.cardBg} border ${theme.cardBorder} hover:border-[#ff6b4a] transition-all group shadow-sm`}
-              >
-                <div
-                  className={`w-12 h-12 rounded-2xl bg-[#ff6b4a]/15 flex items-center justify-center ${theme.accentPrimary} group-hover:scale-110 transition-transform`}
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                    <line x1="2" y1="12" x2="22" y2="12" strokeWidth="2" />
-                    <path
-                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className={`text-xs ${theme.textMuted} font-mono`}>Official Website Domain</p>
-                  <p className={`text-sm font-bold ${theme.textPrimary}`}>Nexuscreative.site</p>
-                </div>
-              </a>
+                  <div className="space-y-6">
+                    {/* Glowing Icon */}
+                    <div
+                      className={`w-16 h-16 rounded-2xl border flex items-center justify-center text-3xl shadow-inner ${srv.accentColor} group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      {srv.icon}
+                    </div>
 
-              <a
-                href="tel:7010231792"
-                className={`flex items-center gap-4 p-4 rounded-3xl ${theme.cardBg} border ${theme.cardBorder} hover:border-[#7b59ef] transition-all group shadow-sm`}
-              >
-                <div className="w-12 h-12 rounded-2xl bg-[#7b59ef]/15 flex items-center justify-center text-[#7b59ef] group-hover:scale-110 transition-transform">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className={`text-xs ${theme.textMuted} font-mono`}>Phone Call</p>
-                  <p className={`text-sm font-bold ${theme.textPrimary}`}>+91 70102 31792</p>
-                </div>
-              </a>
+                    {/* Card Title */}
+                    <div>
+                      <h3 className="text-2xl font-bold text-white tracking-wide group-hover:text-cyan-300 transition-colors">
+                        {srv.title}
+                      </h3>
+                      <div className="mt-1 text-xs font-mono text-cyan-400/90">{srv.metric}</div>
+                    </div>
 
-              <div className={`flex items-start gap-4 p-4 rounded-3xl ${theme.cardBg} border ${theme.cardBorder} shadow-sm`}>
-                <div className="w-12 h-12 rounded-2xl bg-[#2ba5b5]/15 flex items-center justify-center text-[#2ba5b5] shrink-0">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                    {/* Description */}
+                    <p className="text-slate-300 text-sm leading-relaxed">{srv.description}</p>
+
+                    {/* Key points */}
+                    <ul className="space-y-2 pt-2 text-xs text-slate-400">
+                      {srv.details.slice(0, 3).map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2">
+                          <span className="text-cyan-400">✔</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Button matching Template 1 "LEARN MORE" */}
+                  <div className="pt-8">
+                    <button
+                      onClick={() => setSelectedServiceModal(srv)}
+                      className={`w-full py-3 px-6 rounded-xl font-bold text-xs uppercase tracking-wider text-white shadow-lg transition-all ${srv.btnColor}`}
+                    >
+                      LEARN MORE
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <p className={`text-xs ${theme.textMuted} font-mono`}>Studio Office Address</p>
-                  <p className={`text-xs font-semibold ${theme.textPrimary} leading-relaxed mt-0.5`}>
-                    Plot 11, S1, 2nd Floor, Greenwood Apartment,
-                    <br />
-                    Navasakthi Nagar, Noombal Road, Chennai - 600077
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
+        </section>
+      )}
 
-          {/* Right Column: Inquiry Form */}
-          <div className={`lg:col-span-7 ${theme.cardBg} rounded-[40px] p-8 sm:p-10 border ${theme.cardBorder} shadow-2xl`}>
-            {formSubmitted ? (
-              <div className="text-center py-12 space-y-4 animate-fade-in">
-                <div
-                  className={`w-16 h-16 rounded-full ${theme.accentPrimaryBg}/20 flex items-center justify-center ${theme.accentPrimary} text-3xl mx-auto`}
-                >
-                  ✓
+      {/* ========================================================================= */}
+      {/* SECTION 3: TEMPLATE 1 - MULTI-DEVICE SHOWCASE (MOBILE/TABLET & DESKTOP) */}
+      {/* ========================================================================= */}
+      {(viewMode === "unified" || viewMode === "agency") && (
+        <section id="portfolio" className="py-20 md:py-28 bg-[#040813] border-t border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+              <span className="text-xs font-mono uppercase tracking-widest text-purple-400 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
+                Responsive Design Systems
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-white">
+                MULTI-SCREEN EXCELLENCE
+              </h2>
+              <p className="text-slate-400 text-base md:text-lg">
+                Flawless fidelity across smartphones, tablets, and ultra-wide studio monitors.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+              {/* Left Showcase: Mobile & Tablet */}
+              <div className="lg:col-span-5 glass-cyber-card-purple rounded-3xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden relative group">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold tracking-widest text-purple-300 uppercase">
+                      Touch & Gesture UI
+                    </span>
+                    <span className="bg-purple-500/20 text-purple-300 text-[10px] px-2.5 py-1 rounded-full font-mono font-semibold">
+                      iOS & Android
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">MODERN UI DESIGN</h3>
+                  <p className="text-slate-300 text-sm">
+                    Fluid abstract motion, adaptive glass styling, and haptic feedback micro-interactions.
+                  </p>
                 </div>
-                <h3 className={`text-2xl font-bold ${theme.headingFont} ${theme.textPrimary}`}>
-                  Proposal Request Received!
-                </h3>
-                <p className={`text-sm ${theme.textMuted} max-w-md mx-auto`}>
-                  Thank you, <span className={`${theme.textPrimary} font-semibold`}>{formData.name}</span>. Our
-                  senior technical director is reviewing your brief and will respond with a full scope proposal within
-                  24 hours.
-                </p>
-                <div className="pt-4">
+
+                <div className="my-6 rounded-2xl overflow-hidden border border-purple-500/30 shadow-2xl relative group-hover:scale-[1.02] transition-transform duration-500">
+                  <img
+                    src={mobileTabletImg}
+                    alt="Modern UI Design Mobile and Tablet"
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-slate-400">
+                  <span>Fluid 60FPS UI Animations</span>
                   <a
-                    href={getWhatsAppUrl()}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold transition-colors"
+                    href="#contact"
+                    className="text-purple-400 font-bold hover:text-purple-300 flex items-center gap-1"
                   >
-                    <span>Follow Up on WhatsApp Now</span>
+                    <span>Request Demo</span>
                     <span>→</span>
                   </a>
                 </div>
               </div>
-            ) : (
-              <form onSubmit={handleFormSubmit} className="space-y-5">
-                <div>
-                  <h3 className={`text-2xl font-bold ${theme.headingFont} ${theme.textPrimary}`}>
-                    Request a Project Brief
-                  </h3>
-                  <p className={`text-xs ${theme.textMuted} mt-1`}>
-                    Tell us about your requirements and we will send a detailed proposal and timeline within 24 hours.
+
+              {/* Right Showcase: Desktop Workstation */}
+              <div className="lg:col-span-7 glass-cyber-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden relative group">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold tracking-widest text-cyan-300 uppercase">
+                      Desktop Web App Architecture
+                    </span>
+                    <span className="bg-cyan-500/20 text-cyan-300 text-[10px] px-2.5 py-1 rounded-full font-mono font-semibold">
+                      4K Ultra-Wide Ready
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">CREATIVE WEBSITE DESIGN</h3>
+                  <p className="text-slate-300 text-sm">
+                    Full-width data visualizers, responsive design systems, and lightning-fast edge rendering.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label htmlFor={`${formId}-name`} className={`text-xs font-mono ${theme.textPrimary} font-semibold`}>Your Full Name</label>
-                    <input
-                      id={`${formId}-name`}
-                      type="text"
-                      required
-                      placeholder="e.g. John Doe"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className={`w-full px-4 py-3 rounded-2xl ${theme.pageBg} border ${theme.cardBorder} ${theme.textPrimary} placeholder:opacity-50 text-xs focus:outline-none focus:border-indigo-500 transition-colors`}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label htmlFor={`${formId}-email`} className={`text-xs font-mono ${theme.textPrimary} font-semibold`}>Email Address</label>
-                    <input
-                      id={`${formId}-email`}
-                      type="email"
-                      required
-                      placeholder="john@company.com"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className={`w-full px-4 py-3 rounded-2xl ${theme.pageBg} border ${theme.cardBorder} ${theme.textPrimary} placeholder:opacity-50 text-xs focus:outline-none focus:border-indigo-500 transition-colors`}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label htmlFor={`${formId}-phone`} className={`text-xs font-mono ${theme.textPrimary} font-semibold`}>Phone / WhatsApp Number</label>
-                    <input
-                      id={`${formId}-phone`}
-                      type="tel"
-                      required
-                      placeholder="+91 98765 43210"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className={`w-full px-4 py-3 rounded-2xl ${theme.pageBg} border ${theme.cardBorder} ${theme.textPrimary} placeholder:opacity-50 text-xs focus:outline-none focus:border-indigo-500 transition-colors`}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label htmlFor={`${formId}-service`} className={`text-xs font-mono ${theme.textPrimary} font-semibold`}>Service Required</label>
-                    <select
-                      id={`${formId}-service`}
-                      value={formData.service}
-                      onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                      className={`w-full px-4 py-3 rounded-2xl ${theme.pageBg} border ${theme.cardBorder} ${theme.textPrimary} text-xs focus:outline-none focus:border-indigo-500 transition-colors`}
-                    >
-                      <option value="Web Development & UI/UX Design">Web Development &amp; UI/UX Design</option>
-                      <option value="Web Development (Next.js / React)">Web Development (Next.js / React)</option>
-                      <option value="UI/UX Design & Prototyping">UI/UX Design &amp; Prototyping</option>
-                      <option value="Digital Marketing & Paid Ads (Google / Meta)">Digital Marketing &amp; Paid Ads</option>
-                      <option value="All-in-One Full Digital Growth Bundle">All-in-One Full Digital Growth Bundle</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor={`${formId}-budget`} className={`text-xs font-mono ${theme.textPrimary} font-semibold`}>Estimated Budget Range</label>
-                  <select
-                    id={`${formId}-budget`}
-                    value={formData.budget}
-                    onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                    className={`w-full px-4 py-3 rounded-2xl ${theme.pageBg} border ${theme.cardBorder} ${theme.textPrimary} text-xs focus:outline-none focus:border-indigo-500 transition-colors`}
-                  >
-                    <option value="₹20,000 - ₹35,000">₹20,000 – ₹35,000 (Starter Project)</option>
-                    <option value="₹35,000 - ₹60,000">₹35,000 – ₹60,000 (Growth Platform)</option>
-                    <option value="₹60,000 - ₹1,20,000">₹60,000 – ₹1,20,000 (Enterprise Custom)</option>
-                    <option value="₹1,20,000+">₹1,20,000+ (Full Suite & Retainer)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor={`${formId}-message`} className={`text-xs font-mono ${theme.textPrimary} font-semibold`}>Tell us about your vision</label>
-                  <textarea
-                    id={`${formId}-message`}
-                    rows={4}
-                    required
-                    placeholder="Describe your goals, desired timeline, or any reference websites you admire..."
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className={`w-full px-4 py-3 rounded-2xl ${theme.pageBg} border ${theme.cardBorder} ${theme.textPrimary} placeholder:opacity-50 text-xs focus:outline-none focus:border-indigo-500 transition-colors`}
+                <div className="my-6 rounded-2xl overflow-hidden border border-cyan-500/30 shadow-2xl relative group-hover:scale-[1.02] transition-transform duration-500">
+                  <img
+                    src={desktopWorkspaceImg}
+                    alt="Creative Website Design Desktop Monitor"
+                    className="w-full h-auto object-cover"
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  className={`w-full py-4 rounded-full font-bold text-xs ${theme.accentPrimaryBg} ${theme.accentPrimaryText} shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2`}
-                >
-                  <span>Submit Project Inquiry</span>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </button>
-              </form>
-            )}
+                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-slate-400">
+                  <span>99+ PageSpeed Desktop Score</span>
+                  <a
+                    href="#contact"
+                    className="text-cyan-400 font-bold hover:text-cyan-300 flex items-center gap-1"
+                  >
+                    <span>Inspect System</span>
+                    <span>→</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SECTION 4: TEMPLATE 2 - DIGITAL MARKETING & 3D MEGAPHONE HUB */}
+      {/* ========================================================================= */}
+      {(viewMode === "unified" || viewMode === "marketing") && (
+        <section
+          id="marketing-hub"
+          className="py-24 md:py-32 relative bg-[#040714] overflow-hidden border-t border-cyan-500/20"
+        >
+          {/* Concentric ambient background rings */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] rounded-full border border-cyan-500/10 pointer-events-none -z-10 animate-ripple-ring" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[850px] rounded-full border border-blue-500/15 pointer-events-none -z-10" />
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Header matching Template 2 */}
+            <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+              {/* Brand mark */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-xs font-mono text-cyan-300">
+                <span className="text-cyan-400">✦</span>
+                <span className="font-extrabold tracking-wider">NEXUS CREATIVE</span>
+                <span className="text-slate-500">|</span>
+                <span className="text-slate-300">DESIGNED FOR YOUR SUCCESS</span>
+              </div>
+
+              <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-white">
+                DIGITAL <span className="text-cyan-400 text-glow-cyan">MARKETING</span>
+              </h2>
+
+              <p className="text-lg sm:text-xl font-bold tracking-wide uppercase text-slate-300">
+                SMART STRATEGIES, REAL RESULTS
+              </p>
+            </div>
+
+            {/* Central 3D Laptop Dais with 8 Orbiting Nodes */}
+            <div className="relative my-8">
+              {/* Desktop grid layout: 4 Nodes Left, Center 3D visual, 4 Nodes Right */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {/* Left 4 Orbiting Nodes */}
+                <div className="lg:col-span-3 space-y-4 order-2 lg:order-1">
+                  {MARKETING_NODES.filter((n) => n.category === "left").map((node) => {
+                    const active = selectedMarketingNode?.id === node.id;
+                    return (
+                      <div
+                        key={node.id}
+                        onClick={() => setSelectedMarketingNode(node)}
+                        className={`cursor-pointer rounded-2xl p-4 transition-all duration-300 border flex items-center gap-3.5 ${
+                          active
+                            ? "bg-cyan-950/70 border-cyan-400 shadow-lg shadow-cyan-500/25 scale-105"
+                            : "bg-[#0a1128]/70 border-cyan-500/20 hover:border-cyan-500/50 hover:bg-[#0e1938]"
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                          {node.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-mono font-bold uppercase tracking-wider text-slate-200 truncate">
+                            {node.name}
+                          </div>
+                          <div className="text-[11px] text-cyan-400 font-semibold truncate">
+                            {node.metric} • {node.kpi}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Center: 3D Megaphone Laptop Visual */}
+                <div className="lg:col-span-6 relative order-1 lg:order-2 text-center">
+                  <div className="relative mx-auto max-w-lg">
+                    {/* Glowing circular Dais */}
+                    <div className="absolute -inset-6 rounded-full bg-gradient-to-b from-cyan-500/20 via-blue-600/20 to-transparent blur-xl -z-10" />
+
+                    <div className="relative rounded-3xl overflow-hidden border-2 border-cyan-400/40 shadow-2xl shadow-cyan-500/30 bg-[#060b1c] group">
+                      <img
+                        src={laptopMegaphoneImg}
+                        alt="Digital Marketing 3D Megaphone Laptop"
+                        className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+
+                      {/* Live Analytics HUD Overlays */}
+                      <div className="absolute top-4 left-4 bg-[#050914]/90 backdrop-blur-md border border-cyan-500/40 rounded-xl px-3.5 py-2 text-left shadow-lg">
+                        <div className="text-[10px] text-slate-400 font-mono uppercase">Total Reach</div>
+                        <div className="text-sm font-black text-cyan-300 flex items-center gap-1">
+                          <span>45.6K</span>
+                          <span className="text-emerald-400 text-xs font-semibold">+18.2%</span>
+                        </div>
+                      </div>
+
+                      <div className="absolute top-4 right-4 bg-[#050914]/90 backdrop-blur-md border border-cyan-500/40 rounded-xl px-3.5 py-2 text-left shadow-lg">
+                        <div className="text-[10px] text-slate-400 font-mono uppercase">Conversions</div>
+                        <div className="text-sm font-black text-cyan-300 flex items-center gap-1">
+                          <span>12.9K</span>
+                          <span className="text-emerald-400 text-xs font-semibold">+35.7%</span>
+                        </div>
+                      </div>
+
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-cyan-500 text-black px-6 py-2 rounded-full font-black text-xs uppercase tracking-wider shadow-xl flex items-center gap-2 whitespace-nowrap">
+                        <span>📈 GROW YOUR BRAND ONLINE</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right 4 Orbiting Nodes */}
+                <div className="lg:col-span-3 space-y-4 order-3">
+                  {MARKETING_NODES.filter((n) => n.category === "right").map((node) => {
+                    const active = selectedMarketingNode?.id === node.id;
+                    return (
+                      <div
+                        key={node.id}
+                        onClick={() => setSelectedMarketingNode(node)}
+                        className={`cursor-pointer rounded-2xl p-4 transition-all duration-300 border flex items-center gap-3.5 ${
+                          active
+                            ? "bg-cyan-950/70 border-cyan-400 shadow-lg shadow-cyan-500/25 scale-105"
+                            : "bg-[#0a1128]/70 border-cyan-500/20 hover:border-cyan-500/50 hover:bg-[#0e1938]"
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                          {node.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-mono font-bold uppercase tracking-wider text-slate-200 truncate">
+                            {node.name}
+                          </div>
+                          <div className="text-[11px] text-cyan-400 font-semibold truncate">
+                            {node.metric} • {node.kpi}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Active Node Strategy Breakdown Card */}
+              {selectedMarketingNode && (
+                <div className="mt-12 max-w-4xl mx-auto glass-cyber-card rounded-3xl p-6 sm:p-8 border border-cyan-500/40 relative animate-fade-in">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{selectedMarketingNode.icon}</span>
+                      <div>
+                        <h4 className="text-xl font-bold text-white">
+                          {selectedMarketingNode.name} Blueprint
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          {selectedMarketingNode.shortDesc}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-cyan-500/20 border border-cyan-500/40 px-3.5 py-1.5 rounded-xl text-right">
+                        <div className="text-[10px] text-slate-400 uppercase font-mono">Proven Impact</div>
+                        <div className="text-sm font-bold text-cyan-300">
+                          {selectedMarketingNode.metric} ({selectedMarketingNode.kpi})
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 text-xs">
+                    {selectedMarketingNode.details.map((detail, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-start gap-2.5"
+                      >
+                        <span className="text-cyan-400 font-bold">0{idx + 1}.</span>
+                        <span className="text-slate-300 leading-relaxed">{detail}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ========================================================================= */}
+            {/* "OUR EXPERTISE" 4-PILLAR GRID */}
+            {/* ========================================================================= */}
+            <div className="mt-24 pt-16 border-t border-cyan-500/20">
+              <div className="text-center mb-12">
+                <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
+                  OUR EXPERTISE
+                </span>
+                <h3 className="text-2xl sm:text-4xl font-extrabold uppercase text-white mt-4">
+                  Full-Cycle Digital Growth
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {EXPERTISE_CARDS.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="glass-cyber-card rounded-2xl p-6 border border-cyan-500/20 hover:border-cyan-400 transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                      {item.icon}
+                    </div>
+                    <h4 className="text-lg font-bold text-white mb-2">{item.title}</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed mb-4">{item.desc}</p>
+                    <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-400">{item.statLabel}:</span>
+                      <span className="text-cyan-400 font-bold">{item.stat}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ========================================================================= */}
+            {/* TRUST BADGES STRIP */}
+            {/* ========================================================================= */}
+            <div className="mt-16 bg-[#081026] border border-cyan-500/30 rounded-2xl p-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              {TRUST_BADGES.map((badge, idx) => (
+                <div key={idx} className="flex flex-col items-center gap-2">
+                  <span className="text-2xl">{badge.icon}</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                    {badge.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Domain Footer Banner */}
+            <div className="mt-8 text-center text-xs font-mono text-cyan-400 flex items-center justify-center gap-2">
+              <span>🌐</span>
+              <a
+                href="https://nexuscreative.site"
+                className="hover:underline tracking-widest uppercase font-semibold"
+              >
+                www.nexuscreative.site
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SECTION 5: INSTANT PROJECT COST ESTIMATOR */}
+      {/* ========================================================================= */}
+      <section id="estimator" className="py-20 md:py-28 bg-[#050914] border-t border-white/10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
+            <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+              Transparent Pricing Calculator
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold uppercase text-white">
+              INSTANT PROJECT ESTIMATOR
+            </h2>
+            <p className="text-slate-400 text-sm">
+              Calculate realistic deliverables, sprint timelines, and transparent costs in INR.
+            </p>
+          </div>
+
+          <div className="glass-cyber-card rounded-3xl p-6 sm:p-10 border border-cyan-500/30">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Config Options */}
+              <div className="lg:col-span-7 space-y-6">
+                {/* 1. Service Type */}
+                <div>
+                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 block mb-2">
+                    1. Select Core Pillar
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 text-xs font-semibold">
+                    <button
+                      onClick={() => setServicePillar("agency")}
+                      className={`py-2.5 px-3 rounded-xl border transition-all ${
+                        servicePillar === "agency"
+                          ? "bg-cyan-500 text-black border-cyan-400 font-bold"
+                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                      }`}
+                    >
+                      Agency UI & Web
+                    </button>
+                    <button
+                      onClick={() => setServicePillar("marketing")}
+                      className={`py-2.5 px-3 rounded-xl border transition-all ${
+                        servicePillar === "marketing"
+                          ? "bg-cyan-500 text-black border-cyan-400 font-bold"
+                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                      }`}
+                    >
+                      Digital Marketing
+                    </button>
+                    <button
+                      onClick={() => setServicePillar("both")}
+                      className={`py-2.5 px-3 rounded-xl border transition-all ${
+                        servicePillar === "both"
+                          ? "bg-cyan-500 text-black border-cyan-400 font-bold"
+                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                      }`}
+                    >
+                      All-in-One Bundle
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Scope Tier */}
+                <div>
+                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 block mb-2">
+                    2. Project Scope Tier
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 text-xs font-semibold">
+                    <button
+                      onClick={() => setScopeTier("starter")}
+                      className={`py-2.5 px-3 rounded-xl border transition-all ${
+                        scopeTier === "starter"
+                          ? "bg-blue-600 text-white border-blue-400 font-bold"
+                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                      }`}
+                    >
+                      Starter Launchpad
+                    </button>
+                    <button
+                      onClick={() => setScopeTier("growth")}
+                      className={`py-2.5 px-3 rounded-xl border transition-all ${
+                        scopeTier === "growth"
+                          ? "bg-blue-600 text-white border-blue-400 font-bold"
+                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                      }`}
+                    >
+                      Growth Scale (Rec.)
+                    </button>
+                    <button
+                      onClick={() => setScopeTier("enterprise")}
+                      className={`py-2.5 px-3 rounded-xl border transition-all ${
+                        scopeTier === "enterprise"
+                          ? "bg-blue-600 text-white border-blue-400 font-bold"
+                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                      }`}
+                    >
+                      Enterprise Suite
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3. Addon Checkboxes */}
+                <div>
+                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 block mb-2">
+                    3. High-Impact Add-ons
+                  </label>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    {[
+                      { id: "seo", label: "Technical SEO & Schema (+₹6,000)" },
+                      { id: "ads", label: "Google & Meta Ad Setup (+₹8,000)" },
+                      { id: "cms", label: "Headless CMS Portal (+₹7,000)" },
+                      { id: "speed", label: "Sub-Second Speed Pack (+₹4,000)" },
+                    ].map((addon) => (
+                      <label
+                        key={addon.id}
+                        className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={addons[addon.id]}
+                          onChange={() =>
+                            setAddons((prev) => ({ ...prev, [addon.id]: !prev[addon.id] }))
+                          }
+                          className="rounded border-cyan-500 text-cyan-500 focus:ring-cyan-500 w-4 h-4"
+                        />
+                        <span className="text-slate-200">{addon.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Delivery Speed */}
+                <div>
+                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 block mb-2">
+                    4. Sprint Urgency
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+                    <button
+                      onClick={() => setUrgency("standard")}
+                      className={`py-2.5 px-3 rounded-xl border transition-all ${
+                        urgency === "standard"
+                          ? "bg-white/20 text-white border-white/30"
+                          : "bg-white/5 border-white/10 text-slate-400"
+                      }`}
+                    >
+                      Standard (14–21 Days)
+                    </button>
+                    <button
+                      onClick={() => setUrgency("urgent")}
+                      className={`py-2.5 px-3 rounded-xl border transition-all ${
+                        urgency === "urgent"
+                          ? "bg-amber-500 text-black border-amber-400 font-bold"
+                          : "bg-white/5 border-white/10 text-slate-400"
+                      }`}
+                    >
+                      ⚡ Rapid Sprint (7–10 Days)
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Estimate Summary Box */}
+              <div className="lg:col-span-5 bg-[#081026] border border-cyan-500/40 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="text-xs font-mono uppercase tracking-widest text-cyan-400">
+                    Ballpark Estimate
+                  </div>
+                  <div>
+                    <div className="text-4xl sm:text-5xl font-black text-white">
+                      ₹{calculateEstimate()}
+                    </div>
+                    <div className="text-xs text-slate-400 font-mono mt-1">
+                      Transparent milestone-based quote
+                    </div>
+                  </div>
+
+                  <div className="space-y-2.5 pt-4 border-t border-white/10 text-xs text-slate-300">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Core Architecture:</span>
+                      <span className="font-bold text-white capitalize">{servicePillar}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Selected Tier:</span>
+                      <span className="font-bold text-white capitalize">{scopeTier}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Sprint Timeline:</span>
+                      <span className="font-bold text-white capitalize">
+                        {urgency === "urgent" ? "7–10 Days" : "14–21 Days"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">IP Rights:</span>
+                      <span className="font-bold text-emerald-400">100% Client Ownership</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-6 space-y-3">
+                  <a
+                    href={getWhatsAppLink()}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+                  >
+                    <span>Confirm Estimate on WhatsApp</span>
+                    <span>→</span>
+                  </a>
+                  <a
+                    href="#contact"
+                    className="w-full py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-semibold text-center block transition-all"
+                  >
+                    Send Formal RFP Proposal
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 13. FOOTER */}
+      {/* SECTION 6: CONTACT & PROJECT PROPOSAL */}
       {/* ========================================================================= */}
-      <footer className={`border-t ${theme.cardBorder} ${theme.contrastBlockBg} ${theme.contrastBlockText} py-16`}>
+      <section id="contact" className="py-20 md:py-28 bg-[#040714] border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-            {/* Agency info */}
-            <div className="md:col-span-2 space-y-4">
-              <a href="#" className="flex items-center gap-3">
-                <div
-                  className={`w-9 h-9 rounded-xl ${theme.accentPrimaryBg} flex items-center justify-center ${theme.accentPrimaryText} font-bold`}
-                >
-                  ✦
-                </div>
-                <span className={`font-bold text-xl ${theme.headingFont} tracking-tight`}>
-                  Nexus <span className={`italic ${theme.accentPrimary}`}>Creative</span>
-                </span>
-              </a>
-              <p className="text-xs opacity-75 max-w-sm leading-relaxed">
-                A premier digital agency delivering bespoke Web Development, human-centric UI/UX Design, and
-                revenue-driving Digital Marketing campaigns.
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Contact Details */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>ACCEPTING NEW CLIENTS FOR Q3/Q4</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
+                LET'S BUILD SOMETHING EXTRAORDINARY
+              </h2>
+              <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
+                Whether you need a high-converting UI/UX design, custom web application, or full-funnel
+                digital marketing campaigns, we're ready to engineer your growth.
               </p>
-              <div className="flex gap-4 pt-2">
-                {["LinkedIn", "Twitter/X", "GitHub", "Dribbble", "Instagram"].map((network) => (
-                  <a
-                    key={network}
-                    href="#"
-                    className="text-xs opacity-60 hover:opacity-100 transition-opacity font-mono"
-                  >
-                    {network}
-                  </a>
-                ))}
+
+              <div className="space-y-4 pt-4 text-sm">
+                <a
+                  href="https://wa.me/917010231792"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-500/50 transition-all"
+                >
+                  <span className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+                    💬
+                  </span>
+                  <div>
+                    <div className="text-xs text-slate-400">Direct WhatsApp</div>
+                    <div className="font-bold text-white">+91 70102 31792</div>
+                  </div>
+                </a>
+
+                <a
+                  href="mailto:Haridass@nexuscreative.site"
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all"
+                >
+                  <span className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl">
+                    ✉️
+                  </span>
+                  <div>
+                    <div className="text-xs text-slate-400">Official Email</div>
+                    <div className="font-bold text-white">Haridass@nexuscreative.site</div>
+                  </div>
+                </a>
+
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10">
+                  <span className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
+                    📍
+                  </span>
+                  <div>
+                    <div className="text-xs text-slate-400">Headquarters</div>
+                    <div className="font-bold text-white">Chennai, India</div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div className="space-y-3">
-              <p className="text-xs font-mono uppercase tracking-widest font-semibold">Capabilities</p>
-              <ul className="space-y-2 text-xs opacity-75">
-                <li>
-                  <a href="#services" className="hover:underline">
-                    Web Development
-                  </a>
-                </li>
-                <li>
-                  <a href="#services" className="hover:underline">
-                    UI/UX Design Systems
-                  </a>
-                </li>
-                <li>
-                  <a href="#services" className="hover:underline">
-                    Google &amp; Meta Ads
-                  </a>
-                </li>
-                <li>
-                  <a href="#services" className="hover:underline">
-                    Technical SEO Audit
-                  </a>
-                </li>
-                <li>
-                  <a href="#estimator" className="hover:underline">
-                    Live Cost Estimator
-                  </a>
-                </li>
-              </ul>
+            {/* Contact Form */}
+            <div className="lg:col-span-7">
+              <div className="glass-cyber-card rounded-3xl p-6 sm:p-10 border border-cyan-500/30">
+                {formSubmitted ? (
+                  <div className="text-center py-12 space-y-4 animate-fade-in">
+                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-400 text-3xl flex items-center justify-center mx-auto">
+                      ✓
+                    </div>
+                    <h3 className="text-2xl font-bold text-white">Inquiry Received!</h3>
+                    <p className="text-sm text-slate-300 max-w-md mx-auto">
+                      Thank you for reaching out! Our lead strategist will review your project brief
+                      and send a customized proposal within 4 business hours.
+                    </p>
+                    <a
+                      href={getWhatsAppLink()}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-block mt-4 px-6 py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold"
+                    >
+                      Fast-Track via WhatsApp
+                    </a>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setFormSubmitted(true);
+                    }}
+                    className="space-y-4"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor={`${formId}-name`}
+                          className="block text-xs font-mono text-slate-300 mb-1"
+                        >
+                          Full Name *
+                        </label>
+                        <input
+                          id={`${formId}-name`}
+                          type="text"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Alex Morgan"
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor={`${formId}-email`}
+                          className="block text-xs font-mono text-slate-300 mb-1"
+                        >
+                          Work Email *
+                        </label>
+                        <input
+                          id={`${formId}-email`}
+                          type="email"
+                          required
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="alex@company.com"
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor={`${formId}-phone`}
+                          className="block text-xs font-mono text-slate-300 mb-1"
+                        >
+                          Phone / WhatsApp *
+                        </label>
+                        <input
+                          id={`${formId}-phone`}
+                          type="tel"
+                          required
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="+91 98765 43210"
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor={`${formId}-budget`}
+                          className="block text-xs font-mono text-slate-300 mb-1"
+                        >
+                          Target Budget
+                        </label>
+                        <select
+                          id={`${formId}-budget`}
+                          value={formData.budget}
+                          onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl bg-[#0b1329] border border-white/10 text-white focus:outline-none focus:border-cyan-400 text-sm"
+                        >
+                          <option value="₹25,000 - ₹50,000">₹25,000 - ₹50,000</option>
+                          <option value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000</option>
+                          <option value="₹1,00,000+">₹1,00,000+ (Enterprise)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor={`${formId}-service`}
+                        className="block text-xs font-mono text-slate-300 mb-1"
+                      >
+                        Interested Service
+                      </label>
+                      <select
+                        id={`${formId}-service`}
+                        value={formData.service}
+                        onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-[#0b1329] border border-white/10 text-white focus:outline-none focus:border-cyan-400 text-sm"
+                      >
+                        <option value="Full Agency + Digital Marketing Bundle">
+                          Full Agency + Digital Marketing Bundle
+                        </option>
+                        <option value="UI/UX Design & High-Fidelity Prototype">
+                          UI/UX Design & High-Fidelity Prototype
+                        </option>
+                        <option value="Custom Web Development (React / Next.js)">
+                          Custom Web Development (React / Next.js)
+                        </option>
+                        <option value="Digital Marketing & Ads (Google + Meta + SEO)">
+                          Digital Marketing & Ads (Google + Meta + SEO)
+                        </option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor={`${formId}-message`}
+                        className="block text-xs font-mono text-slate-300 mb-1"
+                      >
+                        Project Brief & Goals *
+                      </label>
+                      <textarea
+                        id={`${formId}-message`}
+                        rows={4}
+                        required
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        placeholder="Tell us about your brand, current bottlenecks, and target launch timeline..."
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-4 rounded-xl glow-cyan-btn text-black font-extrabold text-sm uppercase tracking-wider shadow-lg"
+                    >
+                      Submit Project Brief →
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 7. FOOTER */}
+      {/* ========================================================================= */}
+      <footer className="border-t border-white/10 bg-[#02040b] py-14 text-slate-400 text-xs relative overflow-hidden">
+        {/* Glow Divider Line */}
+        <div className="glow-divider w-full absolute top-0 left-0" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-lg">
+                ✦
+              </div>
+              <div>
+                <div className="text-white font-black tracking-wider text-base">
+                  NEXUS CREATIVE
+                </div>
+                <div className="text-[11px] text-slate-400 font-mono">
+                  Official Contact: Haridass@nexuscreative.site • Headquarters: Chennai, India
+                </div>
+              </div>
             </div>
 
-            {/* Direct Contacts */}
-            <div className="space-y-3">
-              <p className="text-xs font-mono uppercase tracking-widest font-semibold">Direct Contact</p>
-              <ul className="space-y-2 text-xs opacity-80 font-mono">
-                <li>
-                  🌐{" "}
-                  <a
-                    href="https://nexuscreative.site"
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`hover:${theme.accentPrimary} transition-colors font-semibold`}
-                  >
-                    Nexuscreative.site
-                  </a>
-                </li>
-                <li>
-                  📞{" "}
-                  <a href="tel:7010231792" className={`hover:${theme.accentSecondary} transition-colors`}>
-                    +91 70102 31792
-                  </a>
-                </li>
-                <li>
-                  💬{" "}
-                  <a
-                    href="https://wa.me/917010231792"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-[#25D366] transition-colors"
-                  >
-                    WhatsApp: +91 70102 31792
-                  </a>
-                </li>
-                <li>
-                  ✉️{" "}
-                  <a href="mailto:RBWealthandrealty@gmail.com" className={`hover:${theme.accentPrimary} transition-colors`}>
-                    RBWealthandrealty@gmail.com
-                  </a>
-                </li>
-                <li className="leading-relaxed opacity-70 text-[11px]">
-                  📍 Plot 11, S1, 2nd Floor, Greenwood Apartment, Navasakthi Nagar, Noombal Road, Chennai - 600077
-                </li>
-                <li className="text-emerald-400 font-bold">🟢 Open for Q2/Q3 Projects</li>
-              </ul>
+            <div className="flex flex-wrap items-center gap-6 font-mono text-xs">
+              <a href="#home" className="hover:text-cyan-400">
+                Home
+              </a>
+              <a href="#about" className="hover:text-cyan-400">
+                About
+              </a>
+              <a href="#services" className="hover:text-cyan-400">
+                UI/UX
+              </a>
+              <a href="#marketing-hub" className="hover:text-cyan-400">
+                Marketing Hub
+              </a>
+              <a href="#estimator" className="hover:text-cyan-400">
+                Estimator
+              </a>
+              <a href="#contact" className="hover:text-cyan-400">
+                Contact
+              </a>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <a
+                href="https://wa.me/917010231792"
+                target="_blank"
+                rel="noreferrer"
+                className="text-emerald-400 hover:text-emerald-300 font-bold font-mono"
+              >
+                WhatsApp (+91 70102 31792)
+              </a>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs opacity-60 font-mono">
-            <p>© 2026 Nexus Creative (Nexuscreative.site). All rights reserved.</p>
-            <div className="flex gap-6">
-              <a href="#" className="hover:underline">
-                Privacy Policy
-              </a>
-              <a href="#" className="hover:underline">
-                Terms of Service
-              </a>
-              <a href="#" className="hover:underline">
-                Security
-              </a>
+          {/* Footer Copyright & Agency Info */}
+          <div className="pt-8 border-t border-white/10 text-center font-mono space-y-2">
+            <div className="text-[11px] tracking-[0.15em] uppercase text-cyan-400/90 font-bold">
+              © 2026 NEXUS CREATIVE • ALL RIGHTS RESERVED • CHENNAI, INDIA
+            </div>
+            <div className="text-[10px] text-slate-500 tracking-wider">
+              OFFICIAL EMAIL: HARIDASS@NEXUSCREATIVE.SITE • WEB APPLICATIONS, BESPOKE UI/UX & SCALABLE MARKETING
             </div>
           </div>
         </div>
       </footer>
+
+
+
+      {/* ========================================================================= */}
+      {/* SERVICE DETAILS MODAL (When clicking "LEARN MORE" on UI/UX Layout cards) */}
+      {/* ========================================================================= */}
+      {selectedServiceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#081026] border border-cyan-400/40 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative space-y-6">
+            <button
+              onClick={() => setSelectedServiceModal(null)}
+              className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 text-slate-300 hover:text-white"
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{selectedServiceModal.icon}</span>
+              <div>
+                <h3 className="text-2xl font-bold text-white">{selectedServiceModal.title}</h3>
+                <span className="text-xs font-mono text-cyan-400">
+                  {selectedServiceModal.metric}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-slate-300 text-sm leading-relaxed">
+              {selectedServiceModal.description}
+            </p>
+
+            <div className="space-y-3 pt-2">
+              <h4 className="text-xs font-mono uppercase tracking-wider text-slate-400">
+                Key Deliverables & Specifications:
+              </h4>
+              <ul className="space-y-2 text-xs text-slate-300">
+                {selectedServiceModal.details.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-cyan-400">✦</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-3">
+              <button
+                onClick={() => setSelectedServiceModal(null)}
+                className="py-2.5 px-4 rounded-xl bg-white/10 text-slate-300 text-xs font-semibold hover:bg-white/15"
+              >
+                Close
+              </button>
+              <a
+                href="#contact"
+                onClick={() => setSelectedServiceModal(null)}
+                className="py-2.5 px-5 rounded-xl glow-cyan-btn text-black font-bold text-xs"
+              >
+                Request Quote For This Service →
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

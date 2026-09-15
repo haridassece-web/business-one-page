@@ -1,34 +1,47 @@
-# Nexus Creative — Digital Agency Website
+# Nexus Creative — Digital Agency & Digital Marketing Hub
 
-Official website for **Nexus Creative** ([Nexuscreative.site](https://nexuscreative.site)), an award-winning digital agency specializing in **Web Development**, **UI/UX Design**, and **Digital Marketing**.
+Official website for **Nexus Creative** ([Nexuscreative.site](https://nexuscreative.site)), an award-winning studio specializing in **Web Development**, **UI/UX Design**, and **Scalable Digital Marketing**.
+
+Headquarters: **Chennai, India**  
+Official Contact: [Haridass@nexuscreative.site](mailto:Haridass@nexuscreative.site)  
+WhatsApp: [+91 70102 31792](https://wa.me/917010231792)
 
 ---
 
 ## 🌟 Key Features
 
-- **Multi-Theme Switcher (Live)**:
-  - 🌾 **Warm Studio**: Warm linen cream (`#fff9f2`), Fraunces serif typography, rich espresso (`#1e1927`), and coral rush (`#ff6b4a`) accents.
-  - 🌌 **Cyber Midnight**: Dark glassmorphic aesthetic with radiant neon gradients.
-  - ⚡ **Clean Tech**: Crisp minimalist white and electric blue (Stripe / Apple style).
-  - 👑 **Obsidian & Gold**: Stealth matte black with champagne gold and emerald accents.
-- **3 Core Pillars**:
-  - **Web Development**: React 19 & Next.js 15, SSR, 95+ Core Web Vitals, E-commerce, Headless CMS.
-  - **UI/UX Design**: Human-centered user research, interactive Figma systems, WCAG 2.1 AA accessibility.
-  - **Digital Marketing**: Google Search & Performance Max ads, high-ROAS Meta ads funnels, technical SEO.
-- **Interactive Case Studies**: Filterable portfolio with interactive case study modal.
-- **Dynamic Project Cost Estimator**: Interactive calculator with instant ballpark pricing and direct WhatsApp export.
-- **Transparent Pricing**: Tiers with fixed project vs. monthly retainer toggle.
-- **Verified Reviews & FAQ Accordion**: Social proof and client questions.
-- **Direct Contacts**: WhatsApp, phone (`+91 70102 31792`), email (`RBWealthandrealty@gmail.com`), and physical office in Chennai.
+- **Hero & Profile Showcase**:
+  - Creative Digital Agency hero with live performance metrics (99.4% CSAT, 180+ Projects Shipped, Sub-second LCP).
+  - High-res electric cyan tech lead visual with floating status badges.
+- **Dedicated About Section**:
+  - `Nexuscreative.site • Award-Winning Studio • Web Dev • UI/UX • Growth`
+  - Highlighting performance engineering, bespoke Figma design systems, and algorithmic growth.
+- **UI/UX Layout (3 Service Cards)**:
+  - **UI Design**: Multi-platform design systems, token architecture, WCAG AA accessibility.
+  - **UX Experience**: Cognitive empathy research, behavioral funnels, journey mapping.
+  - **Web Development**: Next-gen web apps, React 19 headless architecture, sub-second LCP.
+  - Interactive "LEARN MORE" modals detailing technical deliverables.
+- **Multi-Device Showcase**:
+  - High-res split views for Mobile & Tablet UI and 4K Desktop Workstation.
+- **Digital Marketing Hub (Template 2)**:
+  - 3D Megaphone Laptop centerpiece dais with real-time HUD telemetry.
+  - 8 Interactive Orbiting Strategy Nodes: Target Audience, SEO, Social Media, Content Marketing, Performance Analytics, Email Marketing, Google Ads, and Meta Ads.
+  - Strategy blueprint drawers with actionable 3-step roadmaps and target KPIs.
+- **Our Expertise 4-Card Grid & Trust Badges**:
+  - Strategy & Planning, Automation & Tools, Conversion Optimization, ROI Focused.
+- **Instant Project Cost Estimator**:
+  - Real-time scope, timeline, and add-on pricing calculator in INR.
+- **Client Inquiry Proposal Form & WhatsApp Integration**:
+  - Validated submission form and one-click direct WhatsApp chat.
 
 ---
 
 ## 🚀 Tech Stack
 
 - **Framework**: React 19, TypeScript
-- **Styling**: Tailwind CSS v4, custom CSS utilities
+- **Styling**: Tailwind CSS v4, custom cyber CSS utilities
 - **Build Tool**: Vite 8
-- **Typography**: Google Fonts (Fraunces, Space Grotesk, Space Mono)
+- **Typography**: Google Fonts (Outfit, Plus Jakarta Sans, Space Grotesk, Space Mono)
 
 ---
 
@@ -49,7 +62,8 @@ npm run build
 
 ## 🏢 Contact Information
 
+- **Brand**: Nexus Creative
 - **Domain**: [Nexuscreative.site](https://nexuscreative.site)
-- **Email**: [RBWealthandrealty@gmail.com](mailto:RBWealthandrealty@gmail.com)
+- **Email**: [Haridass@nexuscreative.site](mailto:Haridass@nexuscreative.site)
 - **Phone / WhatsApp**: +91 70102 31792
-- **Office**: Plot 11, S1, 2nd Floor, Greenwood Apartment, Navasakthi Nagar, Noombal Road, Chennai - 600077
+- **Headquarters**: Chennai, Tamil Nadu, India
