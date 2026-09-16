@@ -3,6 +3,10 @@ import heroCreativeImg from "./assets/hero-creative.jpg";
 import mobileTabletImg from "./assets/mobile-tablet-ui.jpg";
 import desktopWorkspaceImg from "./assets/desktop-workspace-ui.jpg";
 import laptopMegaphoneImg from "./assets/laptop-megaphone-marketing.jpg";
+import { SERVICES_CATEGORIES, ALL_FLAT_SERVICES } from "./data/servicesData";
+import { PORTFOLIO_PROJECTS, PortfolioItem } from "./data/portfolioData";
+import nexusLogoImg from "./assets/nexus-logo.png";
+import nexusCoverImg from "./assets/nexus-cover.png";
 
 // View mode switcher: Unified, Template 1 (Agency), Template 2 (Marketing)
 type ViewMode = "unified" | "agency" | "marketing";
@@ -228,62 +232,116 @@ export default function App() {
   const [selectedMarketingNode, setSelectedMarketingNode] = useState<MarketingNode | null>(MARKETING_NODES[0]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Estimator State
-  const [servicePillar, setServicePillar] = useState<"agency" | "marketing" | "both">("both");
-  const [scopeTier, setScopeTier] = useState<"starter" | "growth" | "enterprise">("growth");
-  const [urgency, setUrgency] = useState<"standard" | "urgent">("standard");
-  const [addons, setAddons] = useState<{ [key: string]: boolean }>({
-    seo: true,
-    ads: true,
-    cms: true,
-    speed: true,
-  });
+  // Services Mega Menu & Directory States
+  const [servicesMenuOpen, setServicesMenuOpen] = useState(false);
+  const [servicesSearch, setServicesSearch] = useState("");
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState("all");
+  const [directorySearch, setDirectorySearch] = useState("");
+  const [mobileServicesAccordion, setMobileServicesAccordion] = useState(false);
+  const [inquiryToast, setInquiryToast] = useState<string | null>(null);
+
+  // Portfolio Modal State
+  const [selectedPortfolioModal, setSelectedPortfolioModal] = useState<PortfolioItem | null>(null);
 
   // Contact Form State
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    service: "Full Agency + Digital Marketing Bundle",
-    budget: "₹50,000 - ₹1,00,000",
+    category: "",
+    service: "",
     message: "",
   });
+  const [captchaChecked, setCaptchaChecked] = useState(false);
+  const [captchaLoading, setCaptchaLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const formId = useId();
 
-  // Price estimate calculation in INR
-  const calculateEstimate = () => {
-    let base = 35000;
-    if (servicePillar === "agency") base = 30000;
-    if (servicePillar === "marketing") base = 32000;
-    if (servicePillar === "both") base = 58000;
-
-    let multiplier = 1.0;
-    if (scopeTier === "starter") multiplier = 0.75;
-    if (scopeTier === "growth") multiplier = 1.0;
-    if (scopeTier === "enterprise") multiplier = 1.85;
-
-    let urgencyFee = urgency === "urgent" ? 12000 : 0;
-    let addonSum = 0;
-    if (addons.seo) addonSum += 6000;
-    if (addons.ads) addonSum += 8000;
-    if (addons.cms) addonSum += 7000;
-    if (addons.speed) addonSum += 4000;
-
-    return Math.round(base * multiplier + urgencyFee + addonSum).toLocaleString("en-IN");
-  };
-
   const getWhatsAppLink = () => {
     const text = encodeURIComponent(
-      `Hello Nexus Creative! I am interested in your services.\n\n` +
-        `• Service: ${servicePillar.toUpperCase()}\n` +
-        `• Tier: ${scopeTier.toUpperCase()}\n` +
-        `• Timeline: ${urgency.toUpperCase()}\n` +
-        `• Estimated Budget: ₹${calculateEstimate()}\n\n` +
-        `Please share your availability for a discovery call!`
+      `Hello Nexus Creative!\n\n` +
+        `I submitted a project inquiry from your website:\n` +
+        `• Name: ${formData.name || "Client"}\n` +
+        `• Email: ${formData.email || "N/A"}\n` +
+        `• Mobile: ${formData.phone || "N/A"}\n` +
+        `• Category: ${formData.category || "General"}\n` +
+        `• Service: ${formData.service || "General"}\n` +
+        `• Project Details: ${formData.message || "Discovery Call"}\n\n` +
+        `Looking forward to connecting!`
     );
     return `https://wa.me/917010231792?text=${text}`;
   };
+
+  const getServiceWhatsAppUrl = (serviceName: string) => {
+    const text = encodeURIComponent(
+      `Hello Nexus Creative! I would like to inquire about your "${serviceName}" service.\n` +
+        `Please provide more details regarding project scope, estimated timeline, and quote.`
+    );
+    return `https://wa.me/917010231792?text=${text}`;
+  };
+
+  const handleSelectService = (serviceName: string) => {
+    const foundCat = SERVICES_CATEGORIES.find((cat) => cat.items.includes(serviceName));
+    setFormData((prev) => ({
+      ...prev,
+      category: foundCat ? foundCat.name : "",
+      service: serviceName,
+    }));
+    setServicesMenuOpen(false);
+    setMobileMenuOpen(false);
+    setInquiryToast(serviceName);
+    setTimeout(() => setInquiryToast(null), 6000);
+
+    const contactEl = document.getElementById("contact");
+    if (contactEl) {
+      contactEl.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const getProjectWhatsAppUrl = (project: PortfolioItem) => {
+    const text = encodeURIComponent(
+      `Hello Nexus Creative! I saw your "${project.name}" (${project.title}) project in your portfolio.\n` +
+        `I would like to consult with you on building a similar ${project.category} solution.`
+    );
+    return `https://wa.me/917010231792?text=${text}`;
+  };
+
+  const handleInquireProject = (project: PortfolioItem) => {
+    setFormData((prev) => ({
+      ...prev,
+      category: "Web Development",
+      service: `${project.name} Custom Solution`,
+      message: `Hi Nexus Creative, I am interested in building a solution similar to your ${project.name} project (${project.title}) built with ${project.technology}.`,
+    }));
+    setInquiryToast(`${project.name} Portfolio Case Study`);
+    setTimeout(() => setInquiryToast(null), 6000);
+    setSelectedPortfolioModal(null);
+
+    const contactEl = document.getElementById("contact");
+    if (contactEl) {
+      contactEl.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // Filtered services for Mega Menu search
+  const filteredMegaServices = servicesSearch.trim()
+    ? ALL_FLAT_SERVICES.filter(
+        (s) =>
+          s.name.toLowerCase().includes(servicesSearch.toLowerCase()) ||
+          s.categoryName.toLowerCase().includes(servicesSearch.toLowerCase())
+      )
+    : null;
+
+  // Filtered services for in-page directory
+  const filteredDirectoryServices = ALL_FLAT_SERVICES.filter((service) => {
+    const matchesCategory =
+      activeCategoryFilter === "all" || service.categoryId === activeCategoryFilter;
+    const matchesSearch =
+      !directorySearch.trim() ||
+      service.name.toLowerCase().includes(directorySearch.toLowerCase()) ||
+      service.categoryName.toLowerCase().includes(directorySearch.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-[#050914] text-slate-100 selection:bg-cyan-500 selection:text-black relative font-display">
@@ -296,137 +354,96 @@ export default function App() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 0. FLOATING TEMPLATE SELECTOR DOCK (TOP PILL) */}
+      {/* 1. MAIN NAVIGATION HEADER (CLEAN, PROPORTIONAL, STICKY TOP-0)              */}
       {/* ========================================================================= */}
-      <div className="bg-[#0b1329]/90 backdrop-blur-md border-b border-cyan-500/20 py-2.5 px-4 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-            </span>
-            <span className="text-slate-300 font-mono hidden sm:inline">
-              LIVE TEMPLATE SHOWCASE:
-            </span>
-            <span className="text-cyan-400 font-semibold">
-              Digital Agency & Digital Marketing Hub
-            </span>
-          </div>
-
-          {/* View Mode Switcher */}
-          <div className="flex items-center gap-1.5 bg-[#050914] p-1 rounded-full border border-white/10">
-            <button
-              onClick={() => setViewMode("unified")}
-              className={`px-3 py-1 rounded-full font-medium transition-all ${
-                viewMode === "unified"
-                  ? "bg-cyan-500 text-black font-bold shadow-md shadow-cyan-500/30"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Unified Experience
-            </button>
-            <button
-              onClick={() => setViewMode("agency")}
-              className={`px-3 py-1 rounded-full font-medium transition-all ${
-                viewMode === "agency"
-                  ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-500/30"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Agency Design (T1)
-            </button>
-            <button
-              onClick={() => setViewMode("marketing")}
-              className={`px-3 py-1 rounded-full font-medium transition-all ${
-                viewMode === "marketing"
-                  ? "bg-purple-600 text-white font-bold shadow-md shadow-purple-500/30"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Digital Marketing (T2)
-            </button>
-          </div>
-
-          <div className="hidden md:flex items-center gap-3">
-            <a
-              href="https://wa.me/917010231792"
-              target="_blank"
-              rel="noreferrer"
-              className="text-emerald-400 hover:text-emerald-300 font-mono flex items-center gap-1.5"
-            >
-              <span>● WhatsApp:</span>
-              <span className="font-bold">+91 70102 31792</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 1. MAIN NAVIGATION HEADER */}
-      {/* ========================================================================= */}
-      <header className="border-b border-white/10 bg-[#060c1d]/80 backdrop-blur-xl sticky top-[49px] z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Logo */}
-          <a href="#" className="flex items-center gap-3.5 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-600 p-[1.5px] shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-all">
-              <div className="w-full h-full bg-[#050914] rounded-2xl flex items-center justify-center text-cyan-400 font-black text-xl">
-                ✦
-              </div>
+      <header className="border-b border-white/10 bg-[#050914]/95 backdrop-blur-xl sticky top-0 z-50 shadow-xl shadow-black/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+          {/* Brand Logo */}
+          <a href="#home" className="flex items-center gap-3 group shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white p-1 shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-all flex items-center justify-center border border-cyan-400/40 overflow-hidden shrink-0">
+              <img
+                src={nexusLogoImg}
+                alt="Nexus Creative Official Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-extrabold tracking-tight text-white leading-none">
+              <span className="text-lg sm:text-xl font-extrabold tracking-tight text-white leading-none flex items-center gap-1.5 whitespace-nowrap">
                 NEXUS <span className="text-cyan-400 text-glow-cyan">CREATIVE</span>
               </span>
-              <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400 mt-1">
-                DESIGNED FOR YOUR SUCCESS
+              <span className="text-[9px] uppercase font-mono tracking-widest text-slate-400 mt-1 whitespace-nowrap hidden xs:inline">
+                IDEAS • DESIGN • DIGITAL GROWTH
               </span>
             </div>
           </a>
 
-          {/* Nav Links */}
-          <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
+          {/* Desktop Nav Links (Clean, single-line, proportional) */}
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-xs xl:text-sm font-medium text-slate-300 whitespace-nowrap">
             <a href="#home" className="hover:text-cyan-400 transition-colors">
               Home
             </a>
             <a href="#about" className="hover:text-cyan-400 transition-colors">
               About
             </a>
-            <a href="#services" className="hover:text-cyan-400 transition-colors">
-              Services
-            </a>
-            <a href="#marketing-hub" className="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
-              <span>Marketing Hub</span>
-              <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] px-2 py-0.5 rounded-full font-mono">
-                3D Hub
-              </span>
+
+            {/* SERVICES MEGA MENU TRIGGER */}
+            <div
+              className="relative py-2"
+              onMouseEnter={() => setServicesMenuOpen(true)}
+              onMouseLeave={() => setServicesMenuOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setServicesMenuOpen(!servicesMenuOpen)}
+                className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  servicesMenuOpen ? "text-cyan-400 font-bold" : "hover:text-cyan-400 text-slate-200"
+                }`}
+                aria-expanded={servicesMenuOpen}
+              >
+                <span>Services</span>
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    servicesMenuOpen ? "rotate-180 text-cyan-400" : "text-slate-400"
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                </svg>
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              </button>
+            </div>
+
+            <a href="#marketing-hub" className="hover:text-cyan-400 transition-colors">
+              Marketing Hub
             </a>
             <a href="#portfolio" className="hover:text-cyan-400 transition-colors">
               Portfolio
-            </a>
-            <a href="#estimator" className="hover:text-cyan-400 transition-colors">
-              Estimator
             </a>
             <a href="#contact" className="hover:text-cyan-400 transition-colors">
               Contact
             </a>
           </nav>
 
-          {/* Quick CTA */}
-          <div className="hidden sm:flex items-center gap-3">
+          {/* Quick CTA Actions (Proportional, no wrapping) */}
+          <div className="hidden sm:flex items-center gap-2.5 shrink-0">
             <a
               href="https://wa.me/917010231792"
               target="_blank"
               rel="noreferrer"
-              className="px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/20 transition-all flex items-center gap-2"
+              className="px-3 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-semibold hover:bg-emerald-500/20 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              title="Chat on WhatsApp"
             >
-              <svg className="w-4 h-4 fill-emerald-400" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 fill-emerald-400" viewBox="0 0 24 24">
                 <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.83 2.41c-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.3a8.163 8.163 0 01-1.26-4.49c0-4.54 3.7-8.24 8.25-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.32z" />
               </svg>
-              <span>Instant Chat</span>
+              <span className="hidden md:inline">WhatsApp</span>
             </a>
+
             <a
               href="#contact"
-              className="px-5 py-2.5 rounded-xl glow-blue-btn text-white text-xs font-bold tracking-wide"
+              className="px-4 py-2 rounded-xl glow-blue-btn text-white text-xs font-bold tracking-wide whitespace-nowrap shrink-0"
             >
               Get Started →
             </a>
@@ -448,9 +465,235 @@ export default function App() {
           </button>
         </div>
 
+        {/* ========================================================================= */}
+        {/* DESKTOP SERVICES MEGA MENU DROPDOWN PANEL (MATCHING REFERENCE SCREENSHOT) */}
+        {/* ========================================================================= */}
+        {servicesMenuOpen && (
+          <div
+            onMouseEnter={() => setServicesMenuOpen(true)}
+            onMouseLeave={() => setServicesMenuOpen(false)}
+            className="hidden lg:block absolute left-0 right-0 top-full bg-[#060b1c]/98 backdrop-blur-2xl border-b border-cyan-500/30 shadow-2xl shadow-cyan-950/90 z-50 animate-fade-in max-h-[82vh] overflow-y-auto"
+          >
+            {/* Glowing Accent Gradient Top Bar */}
+            <div className="h-[2.5px] w-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500" />
+
+            <div className="max-w-7xl mx-auto px-6 py-7">
+              {/* Header Bar inside Mega Menu */}
+              <div className="flex items-center justify-between gap-4 pb-5 mb-6 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-400 font-black text-base shadow-sm">
+                    ✦
+                  </div>
+                  <div>
+                    <div className="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2.5">
+                      <span>SERVICES DIRECTORY</span>
+                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                        9 DIVISIONS • 52 SPECIALIZED SERVICES
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      Select any service below to automatically pre-fill your proposal brief or start a discovery chat.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Instant Real-Time Search in Mega Menu */}
+                <div className="relative w-80">
+                  <input
+                    type="text"
+                    value={servicesSearch}
+                    onChange={(e) => setServicesSearch(e.target.value)}
+                    placeholder="Search 52 services (e.g. Shopify, SEO, Python)..."
+                    className="w-full pl-9 pr-8 py-2 bg-[#030612] border border-cyan-500/30 focus:border-cyan-400 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 transition-all"
+                  />
+                  <span className="absolute left-3 top-2 text-slate-400 text-xs">🔍</span>
+                  {servicesSearch && (
+                    <button
+                      onClick={() => setServicesSearch("")}
+                      className="absolute right-2.5 top-2 text-slate-400 hover:text-white text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* SEARCH RESULTS VIEW */}
+              {filteredMegaServices ? (
+                <div className="py-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-mono text-cyan-400 font-bold">
+                      FOUND {filteredMegaServices.length} SERVICES FOR "{servicesSearch}":
+                    </span>
+                    <button
+                      onClick={() => setServicesSearch("")}
+                      className="text-xs text-slate-400 hover:text-white underline font-mono"
+                    >
+                      Clear search
+                    </button>
+                  </div>
+
+                  {filteredMegaServices.length === 0 ? (
+                    <div className="text-center py-10 bg-white/5 rounded-2xl border border-white/10 space-y-2">
+                      <p className="text-slate-300 text-sm">
+                        No service matched "{servicesSearch}".
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        We also engineer bespoke proprietary systems! Contact us directly for a custom solution.
+                      </p>
+                      <a
+                        href={getWhatsAppLink()}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-block mt-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"
+                      >
+                        Ask About Custom Engineering on WhatsApp
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {filteredMegaServices.map((service, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleSelectService(service.name)}
+                          className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10 text-left transition-all group cursor-pointer"
+                        >
+                          <div>
+                            <div className="text-xs font-bold text-white group-hover:text-cyan-300">
+                              {service.name}
+                            </div>
+                            <div className="text-[10px] text-cyan-400/80 font-mono mt-0.5">
+                              {service.icon} {service.categoryName}
+                            </div>
+                          </div>
+                          <span className="text-cyan-400 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                            Select →
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* DEFAULT 2-ROW MEGA MENU GRID MATCHING THE USER'S SCREENSHOT */
+                <div className="space-y-7">
+                  {/* ROW 1: 5 Columns (Websites, Web Development, E-Commerce, Mobile Application, CMS) */}
+                  <div className="grid grid-cols-5 gap-6">
+                    {SERVICES_CATEGORIES.filter((cat) => cat.row === 1).map((cat) => (
+                      <div key={cat.id} className="space-y-2.5">
+                        {/* Category Heading with Distinct Cyan Underline Accent (matches screenshot) */}
+                        <div className="pb-1">
+                          <div className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                            <span className="text-sm">{cat.icon}</span>
+                            <span>{cat.name}</span>
+                          </div>
+                          <div className="h-[2px] w-9 bg-cyan-400 mt-1 rounded-full shadow-sm shadow-cyan-400/50" />
+                        </div>
+
+                        {/* List of items */}
+                        <ul className="space-y-1">
+                          {cat.items.map((item, idx) => (
+                            <li key={idx}>
+                              <button
+                                type="button"
+                                onClick={() => handleSelectService(item)}
+                                className="group flex items-start gap-1.5 text-xs text-slate-300 hover:text-cyan-300 hover:translate-x-1 transition-all text-left w-full py-0.5 cursor-pointer"
+                              >
+                                <span className="text-cyan-500/50 group-hover:text-cyan-400 text-[11px] mt-px transition-colors">
+                                  ›
+                                </span>
+                                <span className="leading-snug group-hover:font-medium">{item}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Horizontal Divider Line */}
+                  <div className="h-[1px] bg-white/10 w-full" />
+
+                  {/* ROW 2: 4 Columns (Softwares, Digital Marketing, Market Place, Domain & Hosting) */}
+                  <div className="grid grid-cols-4 gap-6">
+                    {SERVICES_CATEGORIES.filter((cat) => cat.row === 2).map((cat) => (
+                      <div key={cat.id} className="space-y-2.5">
+                        {/* Category Heading with Distinct Cyan Underline Accent (matches screenshot) */}
+                        <div className="pb-1">
+                          <div className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                            <span className="text-sm">{cat.icon}</span>
+                            <span>{cat.name}</span>
+                          </div>
+                          <div className="h-[2px] w-9 bg-cyan-400 mt-1 rounded-full shadow-sm shadow-cyan-400/50" />
+                        </div>
+
+                        {/* List of items */}
+                        <ul className="space-y-1">
+                          {cat.items.map((item, idx) => (
+                            <li key={idx}>
+                              <button
+                                type="button"
+                                onClick={() => handleSelectService(item)}
+                                className="group flex items-start gap-1.5 text-xs text-slate-300 hover:text-cyan-300 hover:translate-x-1 transition-all text-left w-full py-0.5 cursor-pointer"
+                              >
+                                <span className="text-cyan-500/50 group-hover:text-cyan-400 text-[11px] mt-px transition-colors">
+                                  ›
+                                </span>
+                                <span className="leading-snug group-hover:font-medium">{item}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Quick Help Ribbon inside Mega Menu */}
+              <div className="mt-7 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs">
+                <div className="flex items-center gap-2 text-slate-300">
+                  <span className="text-cyan-400 font-bold">⚡ Need a custom combination or enterprise contract?</span>
+                  <span className="text-slate-400 hidden sm:inline">
+                    We engineer bespoke architectures, custom ERPs, and full-funnel growth campaigns.
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://wa.me/917010231792"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 font-bold transition-all flex items-center gap-1.5"
+                  >
+                    <span>💬 Chat on WhatsApp</span>
+                  </a>
+                  <a
+                    href="#services"
+                    onClick={() => setServicesMenuOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all"
+                  >
+                    View In-Page Directory ↓
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Mobile drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#070e22] border-b border-cyan-500/20 px-6 py-6 space-y-4">
+          <div className="lg:hidden bg-[#070e22] border-b border-cyan-500/20 px-6 py-6 space-y-4 max-h-[85vh] overflow-y-auto">
+            {/* Mobile Brand Bar */}
+            <div className="flex items-center gap-3 pb-4 mb-2 border-b border-white/10">
+              <div className="w-10 h-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center overflow-hidden border border-cyan-400/40 shrink-0">
+                <img src={nexusLogoImg} alt="Nexus Creative Logo" className="w-full h-full object-contain" />
+              </div>
+              <div>
+                <div className="text-base font-black text-white">NEXUS CREATIVE</div>
+                <div className="text-[10px] font-mono text-cyan-400">IDEAS • DESIGN • DIGITAL GROWTH</div>
+              </div>
+            </div>
+
             <a
               href="#home"
               onClick={() => setMobileMenuOpen(false)}
@@ -459,11 +702,61 @@ export default function App() {
               Home
             </a>
             <a
+              href="#about"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-slate-200 hover:text-cyan-400 py-1"
+            >
+              About
+            </a>
+
+            {/* Mobile Services Accordion */}
+            <div className="border-y border-white/10 py-2.5">
+              <button
+                type="button"
+                onClick={() => setMobileServicesAccordion(!mobileServicesAccordion)}
+                className="w-full flex items-center justify-between text-slate-100 hover:text-cyan-400 py-1 font-semibold text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-cyan-400 font-bold">✦</span>
+                  <span>Services (52 Specialized Solutions)</span>
+                </div>
+                <span className="text-xs text-cyan-400 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
+                  {mobileServicesAccordion ? "Close ▲" : "Explore ▼"}
+                </span>
+              </button>
+
+              {mobileServicesAccordion && (
+                <div className="mt-3 space-y-4 pl-3 border-l-2 border-cyan-500/30 max-h-80 overflow-y-auto pr-1">
+                  {SERVICES_CATEGORIES.map((cat) => (
+                    <div key={cat.id} className="space-y-1.5">
+                      <div className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>{cat.icon}</span>
+                        <span>{cat.name}</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 pl-2">
+                        {cat.items.map((item, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleSelectService(item)}
+                            className="text-left text-xs text-slate-300 hover:text-cyan-300 py-1 block truncate"
+                          >
+                            • {item}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <a
               href="#services"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-slate-200 hover:text-cyan-400 py-1"
             >
-              UI/UX Layout & Services
+              UI/UX Layout &amp; Capabilities
             </a>
             <a
               href="#portfolio"
@@ -480,13 +773,6 @@ export default function App() {
               Digital Marketing 3D Hub
             </a>
             <a
-              href="#estimator"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-200 hover:text-cyan-400 py-1"
-            >
-              Live Project Estimator
-            </a>
-            <a
               href="#contact"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-slate-200 hover:text-cyan-400 py-1"
@@ -500,7 +786,7 @@ export default function App() {
                 rel="noreferrer"
                 className="w-full text-center py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold"
               >
-                Chat on WhatsApp (+91 70102 31792)
+                Chat on WhatsApp
               </a>
             </div>
           </div>
@@ -513,9 +799,22 @@ export default function App() {
       {(viewMode === "unified" || viewMode === "agency") && (
         <section
           id="home"
-          className="relative pt-12 pb-20 md:pt-20 md:pb-28 overflow-hidden bg-grid-cyber border-b border-white/10"
+          className="relative pt-10 pb-20 md:pt-14 md:pb-28 overflow-hidden bg-grid-cyber border-b border-white/10"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Official Brand Cover Billboard Banner */}
+            <div className="mb-14 rounded-3xl overflow-hidden border-2 border-cyan-500/35 shadow-2xl shadow-cyan-500/20 bg-[#060b1c] group relative">
+              <img
+                src={nexusCoverImg}
+                alt="Nexus Creative - Ideas • Design • Digital Growth - Official Agency Cover"
+                className="w-full h-auto object-cover group-hover:scale-[1.01] transition-transform duration-700"
+              />
+              <div className="absolute top-4 right-4 hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#050914]/85 backdrop-blur-md border border-cyan-400/40 text-xs font-mono text-cyan-300 shadow-lg">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>OFFICIAL NEXUS CREATIVE COVER</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               {/* Left Column: Hero Text */}
               <div className="lg:col-span-7 space-y-7 text-left">
@@ -763,102 +1062,363 @@ export default function App() {
                 </div>
               ))}
             </div>
+
+            {/* ========================================================================= */}
+            {/* FULL SERVICES DIRECTORY & CAPABILITIES (52 SPECIALIZED SOLUTIONS) */}
+            {/* ========================================================================= */}
+            <div id="all-services" className="mt-28 pt-20 border-t border-cyan-500/20">
+              {/* Directory Header */}
+              <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
+                <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span>52 SERVICES ACROSS 9 CORE DIVISIONS</span>
+                </div>
+                <h3 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
+                  FULL CAPABILITIES DIRECTORY
+                </h3>
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                  Browse our complete array of digital engineering, custom software, e-commerce, cloud infrastructure, and performance marketing capabilities.
+                </p>
+              </div>
+
+              {/* Filter Tabs & Search Bar */}
+              <div className="space-y-6 mb-10">
+                {/* Search Bar */}
+                <div className="max-w-xl mx-auto relative">
+                  <input
+                    type="text"
+                    value={directorySearch}
+                    onChange={(e) => setDirectorySearch(e.target.value)}
+                    placeholder="Search 52 specialized services (e.g., Shopify, Hospital, SEO, Python, Hosting)..."
+                    className="w-full pl-11 pr-10 py-3.5 bg-[#0a1128] border border-cyan-500/30 focus:border-cyan-400 rounded-2xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all shadow-lg shadow-cyan-950/40"
+                  />
+                  <span className="absolute left-4 top-3.5 text-base">🔍</span>
+                  {directorySearch && (
+                    <button
+                      onClick={() => setDirectorySearch("")}
+                      className="absolute right-3.5 top-3 text-slate-400 hover:text-white text-sm bg-white/10 w-7 h-7 rounded-full flex items-center justify-center transition-all"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Category Filter Pills */}
+                <div className="flex flex-wrap items-center justify-center gap-2 max-w-5xl mx-auto">
+                  <button
+                    onClick={() => setActiveCategoryFilter("all")}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      activeCategoryFilter === "all"
+                        ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/30 font-extrabold"
+                        : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10"
+                    }`}
+                  >
+                    All Services (52)
+                  </button>
+                  {SERVICES_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveCategoryFilter(cat.id)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                        activeCategoryFilter === cat.id
+                          ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/30 font-extrabold"
+                          : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10"
+                      }`}
+                    >
+                      <span>{cat.icon}</span>
+                      <span>{cat.name}</span>
+                      <span className="opacity-70 font-mono text-[10px]">({cat.items.length})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Status Counters */}
+              <div className="flex items-center justify-between text-xs font-mono text-slate-400 max-w-7xl mx-auto pb-4 border-b border-white/10">
+                <div>
+                  Showing{" "}
+                  <span className="text-cyan-400 font-bold">
+                    {filteredDirectoryServices.length}
+                  </span>{" "}
+                  of 52 services
+                  {activeCategoryFilter !== "all" && (
+                    <span className="ml-2 text-slate-400">
+                      in <span className="text-white capitalize">{activeCategoryFilter.replace("-", " ")}</span>
+                    </span>
+                  )}
+                </div>
+                {(activeCategoryFilter !== "all" || directorySearch) && (
+                  <button
+                    onClick={() => {
+                      setActiveCategoryFilter("all");
+                      setDirectorySearch("");
+                    }}
+                    className="text-cyan-400 hover:underline"
+                  >
+                    Reset all filters
+                  </button>
+                )}
+              </div>
+
+              {/* Service Cards Grid */}
+              {filteredDirectoryServices.length === 0 ? (
+                <div className="text-center py-16 bg-[#0a1128]/60 rounded-3xl border border-white/10 max-w-2xl mx-auto my-8 space-y-3">
+                  <div className="text-3xl">🔍</div>
+                  <h4 className="text-lg font-bold text-white">No services match your search</h4>
+                  <p className="text-xs text-slate-400 max-w-md mx-auto">
+                    Can't find what you are looking for? We build fully custom proprietary software and tailored growth stacks.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setActiveCategoryFilter("all");
+                      setDirectorySearch("");
+                    }}
+                    className="mt-2 px-5 py-2.5 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400"
+                  >
+                    View All 52 Services
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-6">
+                  {filteredDirectoryServices.map((service, idx) => (
+                    <div
+                      key={idx}
+                      className="glass-cyber-card rounded-2xl p-5 border border-cyan-500/20 hover:border-cyan-400/80 flex flex-col justify-between group transition-all duration-300"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                            <span>{service.icon}</span>
+                            <span>{service.categoryName}</span>
+                          </span>
+                          <span className="text-[10px] text-emerald-400 font-mono font-semibold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            Active
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">
+                            {service.name}
+                          </h4>
+                          <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                            Enterprise-grade {service.name.toLowerCase()} designed for speed, scale, and measurable ROI.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-5 mt-4 border-t border-white/10 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectService(service.name)}
+                          className="flex-1 py-2 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500 text-cyan-300 hover:text-black font-bold text-xs transition-all flex items-center justify-center gap-1 border border-cyan-500/30 group-hover:shadow-md group-hover:shadow-cyan-500/20 cursor-pointer"
+                        >
+                          <span>Inquire Now</span>
+                          <span>→</span>
+                        </button>
+                        <a
+                          href={getServiceWhatsAppUrl(service.name)}
+                          target="_blank"
+                          rel="noreferrer"
+                          title={`WhatsApp inquiry for ${service.name}`}
+                          className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 transition-all flex items-center justify-center"
+                        >
+                          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.83 2.41c-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.3a8.163 8.163 0 01-1.26-4.49c0-4.54 3.7-8.24 8.25-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.32z" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </section>
       )}
 
       {/* ========================================================================= */}
-      {/* SECTION 3: TEMPLATE 1 - MULTI-DEVICE SHOWCASE (MOBILE/TABLET & DESKTOP) */}
+      {/* SECTION 3: CLIENT PORTFOLIO & PRODUCTION SITES (MATCHING ATTACHED FORMAT) */}
       {/* ========================================================================= */}
       {(viewMode === "unified" || viewMode === "agency") && (
-        <section id="portfolio" className="py-20 md:py-28 bg-[#040813] border-t border-white/10">
+        <section id="portfolio" className="py-20 md:py-28 bg-[#040813] border-t border-white/10 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Header matching user's format */}
             <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-              <span className="text-xs font-mono uppercase tracking-widest text-purple-400 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
-                Responsive Design Systems
-              </span>
-              <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-white">
-                MULTI-SCREEN EXCELLENCE
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span>COMPANIES WE WORK WITH • PRODUCTION SHOWCASE</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
+                FEATURED CLIENT PORTFOLIO
               </h2>
-              <p className="text-slate-400 text-base md:text-lg">
-                Flawless fidelity across smartphones, tablets, and ultra-wide studio monitors.
+              <p className="text-slate-300 text-base md:text-lg leading-relaxed">
+                Revolutionizing industries through bespoke engineering, intuitive interfaces, and scalable full-stack architectures.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              {/* Left Showcase: Mobile & Tablet */}
-              <div className="lg:col-span-5 glass-cyber-card-purple rounded-3xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden relative group">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold tracking-widest text-purple-300 uppercase">
-                      Touch & Gesture UI
-                    </span>
-                    <span className="bg-purple-500/20 text-purple-300 text-[10px] px-2.5 py-1 rounded-full font-mono font-semibold">
-                      iOS & Android
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white">MODERN UI DESIGN</h3>
-                  <p className="text-slate-300 text-sm">
-                    Fluid abstract motion, adaptive glass styling, and haptic feedback micro-interactions.
-                  </p>
-                </div>
-
-                <div className="my-6 rounded-2xl overflow-hidden border border-purple-500/30 shadow-2xl relative group-hover:scale-[1.02] transition-transform duration-500">
-                  <img
-                    src={mobileTabletImg}
-                    alt="Modern UI Design Mobile and Tablet"
-                    className="w-full h-auto object-cover"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-slate-400">
-                  <span>Fluid 60FPS UI Animations</span>
-                  <a
-                    href="#contact"
-                    className="text-purple-400 font-bold hover:text-purple-300 flex items-center gap-1"
-                  >
-                    <span>Request Demo</span>
-                    <span>→</span>
-                  </a>
-                </div>
+            {/* Companies We Work With Brand Ticker */}
+            <div className="mb-20 py-4 px-6 rounded-2xl bg-[#081026] border border-cyan-500/20 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+              <span className="text-cyan-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span>✦</span> Verified Live Client Deployments:
+              </span>
+              <div className="flex flex-wrap items-center gap-6 text-slate-300 font-semibold">
+                <span className="hover:text-cyan-300 transition-colors">I-CAT Media College</span>
+                <span className="text-slate-600">•</span>
+                <span className="hover:text-cyan-300 transition-colors">Astro Web Studios</span>
+                <span className="text-slate-600">•</span>
+                <span className="hover:text-cyan-300 transition-colors">Gangai Amman Temple</span>
+                <span className="text-slate-600">•</span>
+                <span className="hover:text-cyan-300 transition-colors">RB Wealth & Realty</span>
               </div>
+            </div>
 
-              {/* Right Showcase: Desktop Workstation */}
-              <div className="lg:col-span-7 glass-cyber-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden relative group">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold tracking-widest text-cyan-300 uppercase">
-                      Desktop Web App Architecture
-                    </span>
-                    <span className="bg-cyan-500/20 text-cyan-300 text-[10px] px-2.5 py-1 rounded-full font-mono font-semibold">
-                      4K Ultra-Wide Ready
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white">CREATIVE WEBSITE DESIGN</h3>
-                  <p className="text-slate-300 text-sm">
-                    Full-width data visualizers, responsive design systems, and lightning-fast edge rendering.
-                  </p>
-                </div>
-
-                <div className="my-6 rounded-2xl overflow-hidden border border-cyan-500/30 shadow-2xl relative group-hover:scale-[1.02] transition-transform duration-500">
-                  <img
-                    src={desktopWorkspaceImg}
-                    alt="Creative Website Design Desktop Monitor"
-                    className="w-full h-auto object-cover"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-slate-400">
-                  <span>99+ PageSpeed Desktop Score</span>
-                  <a
-                    href="#contact"
-                    className="text-cyan-400 font-bold hover:text-cyan-300 flex items-center gap-1"
+            {/* Portfolio Projects - Alternating Rows in Attached Format */}
+            <div className="space-y-20">
+              {PORTFOLIO_PROJECTS.map((project, idx) => {
+                const isEven = idx % 2 === 1;
+                return (
+                  <div
+                    key={project.id}
+                    className="glass-cyber-card rounded-3xl p-6 sm:p-10 border border-cyan-500/30 hover:border-cyan-400/70 transition-all duration-300 shadow-xl"
                   >
-                    <span>Inspect System</span>
-                    <span>→</span>
-                  </a>
-                </div>
-              </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                      {/* Content Column */}
+                      <div
+                        className={`lg:col-span-6 space-y-6 ${
+                          isEven ? "order-1 lg:order-2" : "order-1 lg:order-1"
+                        }`}
+                      >
+                        <div>
+                          <div className="inline-block text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 mb-3">
+                            CASE STUDY #{String(idx + 1).padStart(2, "0")}
+                          </div>
+                          {/* Big Project Heading */}
+                          <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                            {project.name}
+                          </h3>
+                        </div>
+
+                        {/* Structured Metadata in Attached Format */}
+                        <div className="space-y-3 bg-white/5 border border-white/10 rounded-2xl p-5">
+                          <div className="text-sm text-slate-200">
+                            <strong className="text-cyan-400 font-semibold font-mono">
+                              Category Name :
+                            </strong>{" "}
+                            <span className="font-medium text-white">{project.category}</span>
+                          </div>
+
+                          <div className="text-sm text-slate-200">
+                            <strong className="text-cyan-400 font-semibold font-mono">
+                              Project Title :
+                            </strong>{" "}
+                            <span className="font-medium text-white">{project.title}</span>
+                          </div>
+
+                          <div className="text-sm text-slate-200">
+                            <strong className="text-cyan-400 font-semibold font-mono">
+                              Company Name :
+                            </strong>{" "}
+                            <span className="font-medium text-white">{project.company}</span>
+                          </div>
+
+                          <div className="text-sm text-slate-200">
+                            <strong className="text-cyan-400 font-semibold font-mono">
+                              Technology :
+                            </strong>{" "}
+                            <span className="font-medium text-white">{project.technology}</span>
+                          </div>
+                        </div>
+
+                        {/* Summary & Impact Metric */}
+                        <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                          {project.description}
+                        </p>
+
+                        {project.metrics && (
+                          <div className="text-xs font-mono text-emerald-400 flex items-center gap-2">
+                            <span>✔ Proven Benchmark:</span>
+                            <span className="font-bold text-white">{project.metrics}</span>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap items-center gap-3 pt-2">
+                          {/* "Click Here" Button matching reference screenshot */}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPortfolioModal(project)}
+                            className="px-6 py-3 rounded-xl glow-blue-btn text-white font-bold text-xs uppercase tracking-wider shadow-lg flex items-center gap-2 cursor-pointer"
+                          >
+                            <span>Click Here</span>
+                            <span>→</span>
+                          </button>
+
+                          {/* Live Site link */}
+                          {project.liveUrl && (
+                            <a
+                              href={project.liveUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all flex items-center gap-2"
+                              title="Open Live Website in New Tab"
+                            >
+                              <span>Live Site</span>
+                              <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleInquireProject(project)}
+                            className="px-5 py-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500 text-cyan-300 hover:text-black font-bold text-xs border border-cyan-500/30 transition-all cursor-pointer"
+                          >
+                            Inquire Similar Solution
+                          </button>
+
+                          <a
+                            href={getProjectWhatsAppUrl(project)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-all flex items-center justify-center"
+                            title="Discuss on WhatsApp"
+                          >
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                              <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.83 2.41c-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.3a8.163 8.163 0 01-1.26-4.49c0-4.54 3.7-8.24 8.25-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.32z" />
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Image Column matching Attached Format */}
+                      <div
+                        className={`lg:col-span-6 ${
+                          isEven ? "order-2 lg:order-1" : "order-2 lg:order-2"
+                        }`}
+                      >
+                        <div className="relative rounded-[22px] overflow-hidden border border-cyan-500/30 shadow-2xl bg-[#091d3e] group">
+                          <img
+                            src={project.image}
+                            alt={project.title}
+                            className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700"
+                            style={{ borderRadius: "20px" }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#050914]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                            <button
+                              onClick={() => setSelectedPortfolioModal(project)}
+                              className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs shadow-lg"
+                            >
+                              Expand Case Study 🔍
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -1100,444 +1660,387 @@ export default function App() {
       )}
 
       {/* ========================================================================= */}
-      {/* SECTION 5: INSTANT PROJECT COST ESTIMATOR */}
+      {/* SECTION 5: CONTACT US (EXACT ATTACHED FORMAT: MAP + GET IN TOUCH FORM)     */}
       {/* ========================================================================= */}
-      <section id="estimator" className="py-20 md:py-28 bg-[#050914] border-t border-white/10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
-            <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-              Transparent Pricing Calculator
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold uppercase text-white">
-              INSTANT PROJECT ESTIMATOR
-            </h2>
-            <p className="text-slate-400 text-sm">
-              Calculate realistic deliverables, sprint timelines, and transparent costs in INR.
-            </p>
-          </div>
+      <section id="contact" className="py-20 md:py-28 bg-[#040816] border-t border-white/10 relative overflow-hidden scroll-mt-20">
+        {/* Subtle cyber background ambient glow */}
+        <div className="absolute top-1/4 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute bottom-10 left-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
-          <div className="glass-cyber-card rounded-3xl p-6 sm:p-10 border border-cyan-500/30">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Config Options */}
-              <div className="lg:col-span-7 space-y-6">
-                {/* 1. Service Type */}
-                <div>
-                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 block mb-2">
-                    1. Select Core Pillar
-                  </label>
-                  <div className="grid grid-cols-3 gap-2 text-xs font-semibold">
-                    <button
-                      onClick={() => setServicePillar("agency")}
-                      className={`py-2.5 px-3 rounded-xl border transition-all ${
-                        servicePillar === "agency"
-                          ? "bg-cyan-500 text-black border-cyan-400 font-bold"
-                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
-                      }`}
-                    >
-                      Agency UI & Web
-                    </button>
-                    <button
-                      onClick={() => setServicePillar("marketing")}
-                      className={`py-2.5 px-3 rounded-xl border transition-all ${
-                        servicePillar === "marketing"
-                          ? "bg-cyan-500 text-black border-cyan-400 font-bold"
-                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
-                      }`}
-                    >
-                      Digital Marketing
-                    </button>
-                    <button
-                      onClick={() => setServicePillar("both")}
-                      className={`py-2.5 px-3 rounded-xl border transition-all ${
-                        servicePillar === "both"
-                          ? "bg-cyan-500 text-black border-cyan-400 font-bold"
-                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
-                      }`}
-                    >
-                      All-in-One Bundle
-                    </button>
-                  </div>
-                </div>
-
-                {/* 2. Scope Tier */}
-                <div>
-                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 block mb-2">
-                    2. Project Scope Tier
-                  </label>
-                  <div className="grid grid-cols-3 gap-2 text-xs font-semibold">
-                    <button
-                      onClick={() => setScopeTier("starter")}
-                      className={`py-2.5 px-3 rounded-xl border transition-all ${
-                        scopeTier === "starter"
-                          ? "bg-blue-600 text-white border-blue-400 font-bold"
-                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
-                      }`}
-                    >
-                      Starter Launchpad
-                    </button>
-                    <button
-                      onClick={() => setScopeTier("growth")}
-                      className={`py-2.5 px-3 rounded-xl border transition-all ${
-                        scopeTier === "growth"
-                          ? "bg-blue-600 text-white border-blue-400 font-bold"
-                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
-                      }`}
-                    >
-                      Growth Scale (Rec.)
-                    </button>
-                    <button
-                      onClick={() => setScopeTier("enterprise")}
-                      className={`py-2.5 px-3 rounded-xl border transition-all ${
-                        scopeTier === "enterprise"
-                          ? "bg-blue-600 text-white border-blue-400 font-bold"
-                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
-                      }`}
-                    >
-                      Enterprise Suite
-                    </button>
-                  </div>
-                </div>
-
-                {/* 3. Addon Checkboxes */}
-                <div>
-                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 block mb-2">
-                    3. High-Impact Add-ons
-                  </label>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    {[
-                      { id: "seo", label: "Technical SEO & Schema (+₹6,000)" },
-                      { id: "ads", label: "Google & Meta Ad Setup (+₹8,000)" },
-                      { id: "cms", label: "Headless CMS Portal (+₹7,000)" },
-                      { id: "speed", label: "Sub-Second Speed Pack (+₹4,000)" },
-                    ].map((addon) => (
-                      <label
-                        key={addon.id}
-                        className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={addons[addon.id]}
-                          onChange={() =>
-                            setAddons((prev) => ({ ...prev, [addon.id]: !prev[addon.id] }))
-                          }
-                          className="rounded border-cyan-500 text-cyan-500 focus:ring-cyan-500 w-4 h-4"
-                        />
-                        <span className="text-slate-200">{addon.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 4. Delivery Speed */}
-                <div>
-                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 block mb-2">
-                    4. Sprint Urgency
-                  </label>
-                  <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
-                    <button
-                      onClick={() => setUrgency("standard")}
-                      className={`py-2.5 px-3 rounded-xl border transition-all ${
-                        urgency === "standard"
-                          ? "bg-white/20 text-white border-white/30"
-                          : "bg-white/5 border-white/10 text-slate-400"
-                      }`}
-                    >
-                      Standard (14–21 Days)
-                    </button>
-                    <button
-                      onClick={() => setUrgency("urgent")}
-                      className={`py-2.5 px-3 rounded-xl border transition-all ${
-                        urgency === "urgent"
-                          ? "bg-amber-500 text-black border-amber-400 font-bold"
-                          : "bg-white/5 border-white/10 text-slate-400"
-                      }`}
-                    >
-                      ⚡ Rapid Sprint (7–10 Days)
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Estimate Summary Box */}
-              <div className="lg:col-span-5 bg-[#081026] border border-cyan-500/40 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
-                <div className="space-y-4">
-                  <div className="text-xs font-mono uppercase tracking-widest text-cyan-400">
-                    Ballpark Estimate
-                  </div>
-                  <div>
-                    <div className="text-4xl sm:text-5xl font-black text-white">
-                      ₹{calculateEstimate()}
-                    </div>
-                    <div className="text-xs text-slate-400 font-mono mt-1">
-                      Transparent milestone-based quote
-                    </div>
-                  </div>
-
-                  <div className="space-y-2.5 pt-4 border-t border-white/10 text-xs text-slate-300">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Core Architecture:</span>
-                      <span className="font-bold text-white capitalize">{servicePillar}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Selected Tier:</span>
-                      <span className="font-bold text-white capitalize">{scopeTier}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Sprint Timeline:</span>
-                      <span className="font-bold text-white capitalize">
-                        {urgency === "urgent" ? "7–10 Days" : "14–21 Days"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">IP Rights:</span>
-                      <span className="font-bold text-emerald-400">100% Client Ownership</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-6 space-y-3">
-                  <a
-                    href={getWhatsAppLink()}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
-                  >
-                    <span>Confirm Estimate on WhatsApp</span>
-                    <span>→</span>
-                  </a>
-                  <a
-                    href="#contact"
-                    className="w-full py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-semibold text-center block transition-all"
-                  >
-                    Send Formal RFP Proposal
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* SECTION 6: CONTACT & PROJECT PROPOSAL */}
-      {/* ========================================================================= */}
-      <section id="contact" className="py-20 md:py-28 bg-[#040714] border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            {/* Contact Details */}
-            <div className="lg:col-span-5 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>ACCEPTING NEW CLIENTS FOR Q3/Q4</span>
-              </div>
-              <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
-                LET'S BUILD SOMETHING EXTRAORDINARY
-              </h2>
-              <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-                Whether you need a high-converting UI/UX design, custom web application, or full-funnel
-                digital marketing campaigns, we're ready to engineer your growth.
-              </p>
-
-              <div className="space-y-4 pt-4 text-sm">
-                <a
-                  href="https://wa.me/917010231792"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-500/50 transition-all"
-                >
-                  <span className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
-                    💬
-                  </span>
-                  <div>
-                    <div className="text-xs text-slate-400">Direct WhatsApp</div>
-                    <div className="font-bold text-white">+91 70102 31792</div>
+          {/* Main 2-Column Split matching Attached Screenshot */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
+            {/* LEFT COLUMN: Interactive Google Map */}
+            <div className="lg:col-span-6 flex flex-col">
+              <div className="relative flex-1 w-full rounded-3xl overflow-hidden border border-slate-700/50 shadow-2xl bg-[#081024] min-h-[480px] lg:min-h-[640px] flex flex-col">
+                {/* Floating Map Info Card matching user's address */}
+                <div className="absolute top-4 left-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-slate-200 max-w-sm text-left animate-fade-in">
+                  <div className="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
+                    <span className="text-[#0066FF]">📍</span>
+                    <span>Nexus Creative</span>
                   </div>
-                </a>
-
-                <a
-                  href="mailto:Haridass@nexuscreative.site"
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all"
-                >
-                  <span className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl">
-                    ✉️
-                  </span>
-                  <div>
-                    <div className="text-xs text-slate-400">Official Email</div>
-                    <div className="font-bold text-white">Haridass@nexuscreative.site</div>
+                  <div className="text-xs text-slate-700 font-semibold mt-1 leading-snug">
+                    Plot 11, S1, 2nd Floor, Greenwood Apartment,
                   </div>
-                </a>
-
-                <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10">
-                  <span className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
-                    📍
-                  </span>
-                  <div>
-                    <div className="text-xs text-slate-400">Headquarters</div>
-                    <div className="font-bold text-white">Chennai, India</div>
+                  <div className="text-xs text-slate-600">
+                    Navasakthi Nagar, Noombal Road, Chennai - 600077
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <div className="lg:col-span-7">
-              <div className="glass-cyber-card rounded-3xl p-6 sm:p-10 border border-cyan-500/30">
-                {formSubmitted ? (
-                  <div className="text-center py-12 space-y-4 animate-fade-in">
-                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-400 text-3xl flex items-center justify-center mx-auto">
-                      ✓
-                    </div>
-                    <h3 className="text-2xl font-bold text-white">Inquiry Received!</h3>
-                    <p className="text-sm text-slate-300 max-w-md mx-auto">
-                      Thank you for reaching out! Our lead strategist will review your project brief
-                      and send a customized proposal within 4 business hours.
-                    </p>
+                  <div className="flex items-center gap-1.5 mt-2 text-xs">
+                    <span className="font-bold text-amber-500">4.9</span>
+                    <span className="text-amber-400 font-bold">★★★★★</span>
+                    <span className="text-[11px] text-slate-400 font-medium">(21) ⓘ</span>
+                  </div>
+                  <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                     <a
-                      href={getWhatsAppLink()}
+                      href="https://maps.google.com/?q=Plot+11,+Greenwood+Apartment,+Navasakthi+Nagar,+Noombal+Road,+Chennai+600077"
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-block mt-4 px-6 py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold"
+                      className="text-[#0066FF] hover:underline font-bold inline-flex items-center gap-1"
                     >
-                      Fast-Track via WhatsApp
+                      <span>View larger map</span>
+                      <span>↗</span>
+                    </a>
+                    <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
+                      Open Now
+                    </span>
+                  </div>
+                </div>
+
+                {/* Map Iframe */}
+                <iframe
+                  title="Greenwood Apartment Navasakthi Nagar Noombal Road Chennai Location"
+                  src="https://maps.google.com/maps?q=Plot+11,+Greenwood+Apartment,+Navasakthi+Nagar,+Noombal+Road,+Chennai+600077&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                  className="w-full flex-1 min-h-[440px] lg:min-h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+
+                {/* Bottom Quick Contact Strip */}
+                <div className="p-4 bg-[#060c1d] border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <span className="text-cyan-400 font-bold">📍</span>
+                    <span className="font-mono">
+                      Plot 11, S1, Greenwood Apt, Navasakthi Nagar, Noombal Rd, Chennai - 600077
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <a
+                      href="tel:+917010231792"
+                      className="text-cyan-300 hover:text-white font-bold flex items-center gap-1.5 transition-colors font-mono"
+                      title="Call Office"
+                    >
+                      <span>📞</span>
+                      <span>+91 70102 31792</span>
+                    </a>
+                    <a
+                      href="https://wa.me/917010231792"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-emerald-400 hover:text-white font-bold flex items-center gap-1.5 transition-colors"
+                      title="WhatsApp Direct"
+                    >
+                      <span>💬</span>
+                      <span>WhatsApp</span>
                     </a>
                   </div>
-                ) : (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      setFormSubmitted(true);
-                    }}
-                    className="space-y-4"
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label
-                          htmlFor={`${formId}-name`}
-                          className="block text-xs font-mono text-slate-300 mb-1"
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Contact Form matching Attached Format */}
+            <div className="lg:col-span-6 flex flex-col">
+              <div className="relative flex-1 rounded-3xl p-6 sm:p-10 bg-[#ffffff] border border-slate-200/80 shadow-2xl overflow-hidden flex flex-col justify-between">
+                {/* Decorative Cyber Constellation Nodes in top-right matching screenshot */}
+                <div className="absolute top-0 right-0 w-48 h-48 pointer-events-none opacity-25 overflow-hidden">
+                  <svg viewBox="0 0 200 200" className="w-full h-full text-[#0066FF]" fill="currentColor">
+                    <circle cx="180" cy="20" r="3" />
+                    <circle cx="140" cy="40" r="2.5" />
+                    <circle cx="170" cy="70" r="3" />
+                    <circle cx="110" cy="80" r="2" />
+                    <circle cx="150" cy="120" r="3" />
+                    <circle cx="190" cy="110" r="2.5" />
+                    <line x1="180" y1="20" x2="140" y2="40" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                    <line x1="140" y1="40" x2="170" y2="70" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                    <line x1="170" y1="70" x2="110" y2="80" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                    <line x1="170" y1="70" x2="150" y2="120" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                    <line x1="150" y1="120" x2="190" y2="110" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                  </svg>
+                </div>
+
+                <div>
+                  {/* Top Accent: Wavy Line & "CONTACT US" in blue */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-6 h-3 text-[#0066FF]" viewBox="0 0 24 10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M1 5c3-4 6-4 9 0s6 4 9 0 4-4 4-4" />
+                    </svg>
+                    <span className="text-xs font-black tracking-widest text-[#0066FF] uppercase">
+                      CONTACT US
+                    </span>
+                  </div>
+
+                  {/* Main Headings */}
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111827] tracking-tight leading-tight">
+                    Have Questions?
+                  </h2>
+                  <h3 className="text-3xl sm:text-4xl font-black text-[#0066FF] tracking-tight mb-6">
+                    Get in Touch!
+                  </h3>
+
+                  {/* Pre-fill Toast indicator if user clicked a service from Mega Menu or Portfolio */}
+                  {inquiryToast && (
+                    <div className="mb-5 p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-center justify-between gap-2 animate-fade-in">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <span className="text-[#0066FF] font-bold">✦</span>
+                        Selected: <strong className="text-[#0066FF]">{inquiryToast}</strong>
+                      </span>
+                      <span className="text-[10px] bg-[#0066FF] text-white px-2 py-0.5 rounded font-bold uppercase">
+                        Pre-filled
+                      </span>
+                    </div>
+                  )}
+
+                  {formSubmitted ? (
+                    <div className="text-center py-10 space-y-4 animate-fade-in">
+                      <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 text-3xl flex items-center justify-center mx-auto font-black shadow-sm">
+                        ✓
+                      </div>
+                      <h4 className="text-2xl font-black text-slate-900">Message Received!</h4>
+                      <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+                        Thank you for reaching out, <strong>{formData.name || "friend"}</strong>! Our technical team will review your project brief for <strong>{formData.service || formData.category || "your inquiry"}</strong> and contact you within 2 hours.
+                      </p>
+                      <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
+                        <a
+                          href={getWhatsAppLink()}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-6 py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-md flex items-center gap-2 transition-transform hover:scale-105"
                         >
-                          Full Name *
-                        </label>
+                          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.83 2.41c-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.3a8.163 8.163 0 01-1.26-4.49c0-4.54 3.7-8.24 8.25-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.32z" />
+                          </svg>
+                          <span>Fast-Track via WhatsApp</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormSubmitted(false);
+                            setFormData({
+                              name: "",
+                              email: "",
+                              phone: "",
+                              category: "",
+                              service: "",
+                              message: "",
+                            });
+                          }}
+                          className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                        >
+                          Send Another Message
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!captchaChecked) {
+                          alert("Please verify that you are not a robot by clicking the checkbox.");
+                          return;
+                        }
+                        setFormSubmitted(true);
+                      }}
+                      className="space-y-3.5"
+                    >
+                      {/* Name* */}
+                      <div>
                         <input
                           id={`${formId}-name`}
                           type="text"
                           required
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          placeholder="Alex Morgan"
-                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+                          placeholder="Name*"
+                          className="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] transition-all shadow-xs"
                         />
                       </div>
+
+                      {/* Email* */}
                       <div>
-                        <label
-                          htmlFor={`${formId}-email`}
-                          className="block text-xs font-mono text-slate-300 mb-1"
-                        >
-                          Work Email *
-                        </label>
                         <input
                           id={`${formId}-email`}
                           type="email"
                           required
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          placeholder="alex@company.com"
-                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+                          placeholder="Email*"
+                          className="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] transition-all shadow-xs"
                         />
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Enter your 10 digit mobile number * */}
                       <div>
-                        <label
-                          htmlFor={`${formId}-phone`}
-                          className="block text-xs font-mono text-slate-300 mb-1"
-                        >
-                          Phone / WhatsApp *
-                        </label>
                         <input
                           id={`${formId}-phone`}
                           type="tel"
                           required
+                          maxLength={10}
+                          pattern="[0-9]{10}"
                           value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="+91 98765 43210"
-                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            setFormData({ ...formData, phone: val });
+                          }}
+                          placeholder="Enter your 10 digit mobile number *"
+                          className="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] transition-all shadow-xs font-mono"
                         />
                       </div>
-                      <div>
-                        <label
-                          htmlFor={`${formId}-budget`}
-                          className="block text-xs font-mono text-slate-300 mb-1"
-                        >
-                          Target Budget
-                        </label>
+
+                      {/* Select Category */}
+                      <div className="relative">
                         <select
-                          id={`${formId}-budget`}
-                          value={formData.budget}
-                          onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl bg-[#0b1329] border border-white/10 text-white focus:outline-none focus:border-cyan-400 text-sm"
+                          id={`${formId}-category`}
+                          value={formData.category}
+                          onChange={(e) => {
+                            setFormData({ ...formData, category: e.target.value, service: "" });
+                          }}
+                          className="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 text-sm focus:outline-none focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] transition-all appearance-none cursor-pointer shadow-xs"
                         >
-                          <option value="₹25,000 - ₹50,000">₹25,000 - ₹50,000</option>
-                          <option value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000</option>
-                          <option value="₹1,00,000+">₹1,00,000+ (Enterprise)</option>
+                          <option value="">Select Category</option>
+                          {SERVICES_CATEGORIES.map((cat) => (
+                            <option key={cat.id} value={cat.name}>
+                              {cat.name}
+                            </option>
+                          ))}
                         </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                          <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                          </svg>
+                        </div>
                       </div>
-                    </div>
 
-                    <div>
-                      <label
-                        htmlFor={`${formId}-service`}
-                        className="block text-xs font-mono text-slate-300 mb-1"
-                      >
-                        Interested Service
-                      </label>
-                      <select
-                        id={`${formId}-service`}
-                        value={formData.service}
-                        onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-[#0b1329] border border-white/10 text-white focus:outline-none focus:border-cyan-400 text-sm"
-                      >
-                        <option value="Full Agency + Digital Marketing Bundle">
-                          Full Agency + Digital Marketing Bundle
-                        </option>
-                        <option value="UI/UX Design & High-Fidelity Prototype">
-                          UI/UX Design & High-Fidelity Prototype
-                        </option>
-                        <option value="Custom Web Development (React / Next.js)">
-                          Custom Web Development (React / Next.js)
-                        </option>
-                        <option value="Digital Marketing & Ads (Google + Meta + SEO)">
-                          Digital Marketing & Ads (Google + Meta + SEO)
-                        </option>
-                      </select>
-                    </div>
+                      {/* Select Service */}
+                      <div className="relative">
+                        <select
+                          id={`${formId}-service`}
+                          value={formData.service}
+                          onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                          className="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-800 text-sm focus:outline-none focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] transition-all appearance-none cursor-pointer shadow-xs"
+                        >
+                          <option value="">Select Service</option>
+                          {formData.service &&
+                            !SERVICES_CATEGORIES.some((c) => c.items.includes(formData.service)) && (
+                              <option value={formData.service}>{formData.service}</option>
+                            )}
+                          {formData.category ? (
+                            SERVICES_CATEGORIES.find(
+                              (c) => c.name.toLowerCase() === formData.category.toLowerCase()
+                            )?.items.map((srv, idx) => (
+                              <option key={idx} value={srv}>
+                                {srv}
+                              </option>
+                            ))
+                          ) : (
+                            SERVICES_CATEGORIES.map((cat) => (
+                              <optgroup key={cat.id} label={`${cat.name} (${cat.items.length})`}>
+                                {cat.items.map((srv, idx) => (
+                                  <option key={idx} value={srv}>
+                                    {srv}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            ))
+                          )}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                          <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                          </svg>
+                        </div>
+                      </div>
 
-                    <div>
-                      <label
-                        htmlFor={`${formId}-message`}
-                        className="block text-xs font-mono text-slate-300 mb-1"
-                      >
-                        Project Brief & Goals *
-                      </label>
-                      <textarea
-                        id={`${formId}-message`}
-                        rows={4}
-                        required
-                        value={formData.message}
-                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        placeholder="Tell us about your brand, current bottlenecks, and target launch timeline..."
-                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
-                      />
-                    </div>
+                      {/* Tell Us About Project * */}
+                      <div>
+                        <textarea
+                          id={`${formId}-message`}
+                          rows={4}
+                          required
+                          value={formData.message}
+                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                          placeholder="Tell Us About Project *"
+                          className="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] transition-all resize-y shadow-xs"
+                        />
+                      </div>
 
-                    <button
-                      type="submit"
-                      className="w-full py-4 rounded-xl glow-cyan-btn text-black font-extrabold text-sm uppercase tracking-wider shadow-lg"
-                    >
-                      Submit Project Brief →
-                    </button>
-                  </form>
-                )}
+                      {/* reCAPTCHA Widget matching attached screenshot */}
+                      <div className="pt-1">
+                        <div className="bg-[#f9fafb] text-slate-800 rounded-lg p-3 border border-slate-300 shadow-xs max-w-[302px] flex items-center justify-between">
+                          <label className="flex items-center gap-3 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={captchaChecked}
+                              onChange={() => {
+                                if (!captchaChecked) {
+                                  setCaptchaLoading(true);
+                                  setTimeout(() => {
+                                    setCaptchaLoading(false);
+                                    setCaptchaChecked(true);
+                                  }, 500);
+                                } else {
+                                  setCaptchaChecked(false);
+                                }
+                              }}
+                              className="sr-only"
+                            />
+                            <div
+                              className={`w-6 h-6 rounded border flex items-center justify-center transition-all ${
+                                captchaChecked
+                                  ? "border-emerald-500 bg-emerald-500 text-white"
+                                  : captchaLoading
+                                  ? "border-blue-500 border-t-transparent animate-spin"
+                                  : "border-slate-400 bg-white hover:border-slate-600"
+                              }`}
+                            >
+                              {captchaChecked && (
+                                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              )}
+                            </div>
+                            <span className="text-xs font-medium text-slate-700">
+                              I'm not a robot
+                            </span>
+                          </label>
+
+                          <div className="flex flex-col items-center justify-center text-[9px] text-slate-400 leading-tight pl-3 border-l border-slate-200">
+                            <svg className="w-6 h-6 text-[#1A73E8]" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2a10 10 0 1010 10A10.011 10.011 0 0012 2zm1 15h-2v-2h2zm0-4h-2V7h2z" />
+                            </svg>
+                            <span className="font-semibold text-slate-500 text-[8px]">reCAPTCHA</span>
+                            <span className="text-[7px] text-slate-400">Privacy - Terms</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Submit Button matching Attached Screenshot */}
+                      <div className="pt-2">
+                        <button
+                          type="submit"
+                          className="px-8 py-3.5 rounded-lg bg-[#0066FF] hover:bg-[#0052cc] active:scale-[0.99] text-white font-bold text-sm tracking-wide shadow-md hover:shadow-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+                        >
+                          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                          </svg>
+                          <span>Get in Touch</span>
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1553,16 +2056,23 @@ export default function App() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-lg">
-                ✦
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-white p-1 shadow-md flex items-center justify-center overflow-hidden border border-cyan-400/40 shrink-0">
+                <img
+                  src={nexusLogoImg}
+                  alt="Nexus Creative Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <div className="text-white font-black tracking-wider text-base">
                   NEXUS CREATIVE
                 </div>
-                <div className="text-[11px] text-slate-400 font-mono">
-                  Official Contact: Haridass@nexuscreative.site • Headquarters: Chennai, India
+                <div className="text-[11px] text-slate-300 font-mono">
+                  Official Contact: Haridass@nexuscreative.site • Phone: +91 70102 31792
+                </div>
+                <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                  Headquarters: Plot 11, S1, 2nd Floor, Greenwood Apartment, Navasakthi Nagar, Noombal Road, Chennai - 600077
                 </div>
               </div>
             </div>
@@ -1579,9 +2089,6 @@ export default function App() {
               </a>
               <a href="#marketing-hub" className="hover:text-cyan-400">
                 Marketing Hub
-              </a>
-              <a href="#estimator" className="hover:text-cyan-400">
-                Estimator
               </a>
               <a href="#contact" className="hover:text-cyan-400">
                 Contact
@@ -1670,6 +2177,115 @@ export default function App() {
               >
                 Request Quote For This Service →
               </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* PORTFOLIO PROJECT CASE STUDY MODAL */}
+      {/* ========================================================================= */}
+      {selectedPortfolioModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="bg-[#081026] border border-cyan-400/40 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative space-y-6 my-8">
+            <button
+              onClick={() => setSelectedPortfolioModal(null)}
+              className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer z-10"
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
+
+            {/* Project Screenshot Preview */}
+            <div className="rounded-2xl overflow-hidden border border-cyan-500/30 shadow-2xl bg-[#091d3e]">
+              <img
+                src={selectedPortfolioModal.image}
+                alt={selectedPortfolioModal.title}
+                className="w-full h-auto object-cover max-h-72"
+              />
+            </div>
+
+            <div>
+              <div className="inline-block text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 mb-2">
+                VERIFIED PRODUCTION PLATFORM
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
+                {selectedPortfolioModal.name}
+              </h3>
+            </div>
+
+            {/* Structured Info matching screenshot */}
+            <div className="space-y-2.5 bg-white/5 border border-white/10 rounded-2xl p-4 text-xs sm:text-sm">
+              <div>
+                <strong className="text-cyan-400 font-mono">Category Name :</strong>{" "}
+                <span className="text-white">{selectedPortfolioModal.category}</span>
+              </div>
+              <div>
+                <strong className="text-cyan-400 font-mono">Project Title :</strong>{" "}
+                <span className="text-white">{selectedPortfolioModal.title}</span>
+              </div>
+              <div>
+                <strong className="text-cyan-400 font-mono">Company Name :</strong>{" "}
+                <span className="text-white">{selectedPortfolioModal.company}</span>
+              </div>
+              <div>
+                <strong className="text-cyan-400 font-mono">Technology :</strong>{" "}
+                <span className="text-white">{selectedPortfolioModal.technology}</span>
+              </div>
+            </div>
+
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+              {selectedPortfolioModal.description}
+            </p>
+
+            {selectedPortfolioModal.metrics && (
+              <div className="text-xs font-mono text-emerald-400">
+                ✔ Key Production Benchmark:{" "}
+                <span className="text-white font-bold">{selectedPortfolioModal.metrics}</span>
+              </div>
+            )}
+
+            <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedPortfolioModal(null)}
+                className="py-2.5 px-4 rounded-xl bg-white/10 text-slate-300 text-xs font-semibold hover:bg-white/15 cursor-pointer"
+              >
+                Close Window
+              </button>
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                {selectedPortfolioModal.liveUrl && (
+                  <a
+                    href={selectedPortfolioModal.liveUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="py-2.5 px-4 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-bold text-xs border border-cyan-500/40 flex items-center gap-1.5 transition-all"
+                  >
+                    <span>Visit Live Site</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                )}
+
+                <a
+                  href={getProjectWhatsAppUrl(selectedPortfolioModal)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all"
+                >
+                  <span>WhatsApp Inquiry</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => handleInquireProject(selectedPortfolioModal)}
+                  className="py-2.5 px-5 rounded-xl glow-cyan-btn text-black font-extrabold text-xs cursor-pointer"
+                >
+                  Inquire This Solution →
+                </button>
+              </div>
             </div>
           </div>
         </div>
