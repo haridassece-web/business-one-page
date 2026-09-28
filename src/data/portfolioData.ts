@@ -2,6 +2,7 @@ import icatImg from "../assets/portfolio/icat-dashboard.png";
 import astroImg from "../assets/portfolio/astro-web.png";
 import gangaiImg from "../assets/portfolio/gangaiamman.png";
 import cargoImg from "../assets/portfolio/cargo-agenda.png";
+import jothiMatrimonyImg from "../assets/portfolio/jothi-matrimony.png";
 
 export interface PortfolioItem {
   id: string;
@@ -69,4 +70,18 @@ export const PORTFOLIO_PROJECTS: PortfolioItem[] = [
       "High-converting prime property investment portal spotlighting DTCP-approved layouts, interactive master plans, price calculator, verified plots, and instant direct consultation pipelines.",
     metrics: "250+ Verified Buyer Inquiries • DTCP Certified",
   },
+  {
+    id: "chennai-jothi-matrimony",
+    name: "Chennai Jothi Matrimony",
+    category: "Matrimonial Web Portal / E-Commerce",
+    title: "Premium Tamil Matrimonial Search & Matchmaking Web Portal",
+    company: "Chennai Jothi Matrimony",
+    technology: "React, Node.js, Tailwind CSS, PostgreSQL, AWS",
+    image: jothiMatrimonyImg,
+    liveUrl: "https://jothimatrimony.com/",
+    description:
+      "Comprehensive matchmaking web portal tailored for South Indian communities featuring verified bride and groom profile listings, automated horoscope matching, photo search filters, and secure privacy controls.",
+    metrics: "10,000+ Verified Profiles • 98.5% Match Accuracy",
+  },
 ];
+

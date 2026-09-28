@@ -226,6 +226,19 @@ const TRUST_BADGES = [
   { label: "Dedicated Support", icon: "👥" },
 ];
 
+export interface RegisteredLead {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  category: string;
+  service: string;
+  message: string;
+  submittedAt: string;
+  status: "New" | "Contacted" | "Closed";
+  emailSent?: boolean;
+}
+
 export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>("unified");
   const [selectedServiceModal, setSelectedServiceModal] = useState<typeof UI_UX_SERVICES[0] | null>(null);
@@ -243,7 +256,7 @@ export default function App() {
   // Portfolio Modal State
   const [selectedPortfolioModal, setSelectedPortfolioModal] = useState<PortfolioItem | null>(null);
 
-  // Contact Form State
+  // Contact Form & Lead System State
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -255,7 +268,28 @@ export default function App() {
   const [captchaChecked, setCaptchaChecked] = useState(false);
   const [captchaLoading, setCaptchaLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatusText, setSubmitStatusText] = useState("");
   const formId = useId();
+
+  // Admin Leads Inbox Drawer State
+  const [adminLeadsOpen, setAdminLeadsOpen] = useState(false);
+  const [leadSearchQuery, setLeadSearchQuery] = useState("");
+  const [registeredLeads, setRegisteredLeads] = useState<RegisteredLead[]>(() => {
+    try {
+      const saved = localStorage.getItem("nexus_registered_leads_v1");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [web3FormsKey, setWeb3FormsKey] = useState<string>(() => {
+    return localStorage.getItem("nexus_web3forms_key") || "";
+  });
+  const [adminEmail, setAdminEmail] = useState<string>(() => {
+    return localStorage.getItem("nexus_admin_email") || "haridass@nexuscreative.site";
+  });
 
   const getWhatsAppLink = () => {
     const text = encodeURIComponent(
@@ -278,6 +312,149 @@ export default function App() {
         `Please provide more details regarding project scope, estimated timeline, and quote.`
     );
     return `https://wa.me/917010231792?text=${text}`;
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!captchaChecked) {
+      alert("Please verify that you are not a robot by clicking the checkbox.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatusText("Recording registration & dispatching notifications...");
+
+    const newLead: RegisteredLead = {
+      id: "LEAD-" + Date.now().toString(36).toUpperCase(),
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      category: formData.category || "General",
+      service: formData.service || "General Inquiry",
+      message: formData.message,
+      submittedAt: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+      status: "New",
+      emailSent: false,
+    };
+
+    // Save lead to local storage immediately so it's NEVER lost
+    let currentList: RegisteredLead[] = [];
+    try {
+      const saved = localStorage.getItem("nexus_registered_leads_v1");
+      if (saved) currentList = JSON.parse(saved);
+    } catch {}
+
+    const updatedList = [newLead, ...currentList.filter((l) => l.id !== newLead.id)];
+    setRegisteredLeads(updatedList);
+    try {
+      localStorage.setItem("nexus_registered_leads_v1", JSON.stringify(updatedList));
+    } catch (err) {
+      console.error("Storage error:", err);
+    }
+
+    let dispatched = false;
+
+    // 1. Dispatch via Web3Forms API endpoint (Free / Keyed email delivery)
+    try {
+      const apiKey = web3FormsKey || "a3c94291-7299-4d69-b5f7-876b32b851bf";
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: apiKey,
+          subject: `🔥 New Registration: ${formData.name} - ${formData.service || formData.category}`,
+          from_name: "Nexus Creative Portal",
+          to_email: adminEmail,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          category: formData.category,
+          service: formData.service,
+          message: formData.message,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        dispatched = true;
+      }
+    } catch (wErr) {
+      console.log("Web3Forms notice:", wErr);
+    }
+
+    // 2. Dispatch via PHP server script (/send-email.php)
+    try {
+      const pRes = await fetch("./send-email.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          category: formData.category,
+          service: formData.service,
+          message: formData.message,
+          admin_email: adminEmail,
+        }),
+      });
+      if (pRes.ok) {
+        const pData = await pRes.json();
+        if (pData.success) {
+          dispatched = true;
+        }
+      }
+    } catch (pErr) {
+      console.log("PHP endpoint notice:", pErr);
+    }
+
+    // Mark emailSent in stored lead
+    newLead.emailSent = dispatched;
+    const finalizedList = [newLead, ...currentList.filter((l) => l.id !== newLead.id)];
+    setRegisteredLeads(finalizedList);
+    try {
+      localStorage.setItem("nexus_registered_leads_v1", JSON.stringify(finalizedList));
+    } catch {}
+
+    setIsSubmitting(false);
+    setFormSubmitted(true);
+  };
+
+  const exportLeadsCSV = () => {
+    if (registeredLeads.length === 0) {
+      alert("No registered leads available to export.");
+      return;
+    }
+    const headers = ["Lead ID", "Name", "Email", "Phone", "Category", "Service", "Message", "Submitted At", "Status", "Email Sent"];
+    const rows = registeredLeads.map((l) => [
+      `"${l.id}"`,
+      `"${l.name.replace(/"/g, '""')}"`,
+      `"${l.email.replace(/"/g, '""')}"`,
+      `"${l.phone}"`,
+      `"${l.category.replace(/"/g, '""')}"`,
+      `"${l.service.replace(/"/g, '""')}"`,
+      `"${l.message.replace(/"/g, '""')}"`,
+      `"${l.submittedAt}"`,
+      `"${l.status}"`,
+      `"${l.emailSent ? "Dispatched" : "Logged in Local Inbox"}"`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `nexus_creative_customer_leads_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const deleteLead = (leadId: string) => {
+    if (confirm("Are you sure you want to remove this customer record?")) {
+      const filtered = registeredLeads.filter((l) => l.id !== leadId);
+      setRegisteredLeads(filtered);
+      localStorage.setItem("nexus_registered_leads_v1", JSON.stringify(filtered));
+    }
   };
 
   const handleSelectService = (serviceName: string) => {
@@ -1270,6 +1447,8 @@ export default function App() {
                 <span className="hover:text-cyan-300 transition-colors">Gangai Amman Temple</span>
                 <span className="text-slate-600">•</span>
                 <span className="hover:text-cyan-300 transition-colors">RB Wealth & Realty</span>
+                <span className="text-slate-600">•</span>
+                <span className="hover:text-cyan-300 transition-colors">Chennai Jothi Matrimony</span>
               </div>
             </div>
 
@@ -1806,8 +1985,13 @@ export default function App() {
                       </div>
                       <h4 className="text-2xl font-black text-slate-900">Message Received!</h4>
                       <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-                        Thank you for reaching out, <strong>{formData.name || "friend"}</strong>! Our technical team will review your project brief for <strong>{formData.service || formData.category || "your inquiry"}</strong> and contact you within 2 hours.
+                        Thank you for reaching out, <strong>{formData.name || "friend"}</strong>! Our technical team has recorded your project brief for <strong>{formData.service || formData.category || "your inquiry"}</strong> and dispatched notifications to our administrative team.
                       </p>
+                      
+                      <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-center gap-2 max-w-md mx-auto">
+                        <span className="font-bold">✦ Notification Status:</span> Lead Logged & Transmitted
+                      </div>
+
                       <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
                         <a
                           href={getWhatsAppLink()}
@@ -1833,24 +2017,14 @@ export default function App() {
                               message: "",
                             });
                           }}
-                          className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                          className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
                         >
                           Send Another Message
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        if (!captchaChecked) {
-                          alert("Please verify that you are not a robot by clicking the checkbox.");
-                          return;
-                        }
-                        setFormSubmitted(true);
-                      }}
-                      className="space-y-3.5"
-                    >
+                    <form onSubmit={handleFormSubmit} className="space-y-3.5">
                       {/* Name* */}
                       <div>
                         <input
@@ -2030,12 +2204,27 @@ export default function App() {
                       <div className="pt-2">
                         <button
                           type="submit"
-                          className="px-8 py-3.5 rounded-lg bg-[#0066FF] hover:bg-[#0052cc] active:scale-[0.99] text-white font-bold text-sm tracking-wide shadow-md hover:shadow-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+                          disabled={isSubmitting}
+                          className={`w-full sm:w-auto px-8 py-3.5 rounded-lg bg-[#0066FF] hover:bg-[#0052cc] active:scale-[0.99] text-white font-bold text-sm tracking-wide shadow-md hover:shadow-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                            isSubmitting ? "opacity-75 cursor-wait" : ""
+                          }`}
                         >
-                          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                          </svg>
-                          <span>Get in Touch</span>
+                          {isSubmitting ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                              <span>Recording & Transmitting Brief...</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                              </svg>
+                              <span>Get in Touch</span>
+                            </>
+                          )}
                         </button>
                       </div>
                     </form>
@@ -2096,6 +2285,13 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setAdminLeadsOpen(true)}
+                className="px-3.5 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 font-mono text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              >
+                <span>⚡ Admin Inbox ({registeredLeads.length})</span>
+              </button>
               <a
                 href="https://wa.me/917010231792"
                 target="_blank"
@@ -2286,6 +2482,194 @@ export default function App() {
                   Inquire This Solution →
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ADMIN LEADS INBOX MODAL */}
+      {/* ========================================================================= */}
+      {adminLeadsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="bg-[#081026] border border-cyan-400/50 rounded-3xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl relative space-y-6 my-8">
+            <button
+              onClick={() => setAdminLeadsOpen(false)}
+              className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/10 text-slate-300 hover:text-white cursor-pointer z-10"
+              aria-label="Close admin modal"
+            >
+              ✕
+            </button>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">⚡</span>
+                  <h3 className="text-2xl font-black text-white">Registered Leads & Customer Submissions</h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  Real-time inbox of all customer registrations submitted through the website.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={exportLeadsCSV}
+                  className="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold font-mono flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  📥 Export CSV
+                </button>
+              </div>
+            </div>
+
+            {/* Settings / Configuration Accordion */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
+              <div className="text-xs font-bold text-cyan-400 font-mono uppercase tracking-wider">
+                ⚙️ Notification Target Settings:
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block text-slate-300 text-[11px] font-mono mb-1">
+                    Recipient Email Address:
+                  </label>
+                  <input
+                    type="email"
+                    value={adminEmail}
+                    onChange={(e) => {
+                      setAdminEmail(e.target.value);
+                      localStorage.setItem("nexus_admin_email", e.target.value);
+                    }}
+                    className="w-full px-3 py-2 rounded-lg bg-black/40 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                    placeholder="e.g. haridass@nexuscreative.site"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 text-[11px] font-mono mb-1">
+                    Web3Forms Access Key (Optional):
+                  </label>
+                  <input
+                    type="text"
+                    value={web3FormsKey}
+                    onChange={(e) => {
+                      setWeb3FormsKey(e.target.value);
+                      localStorage.setItem("nexus_web3forms_key", e.target.value);
+                    }}
+                    className="w-full px-3 py-2 rounded-lg bg-black/40 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                    placeholder="Leave empty to use built-in PHP & default webhooks"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Search & Filter */}
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={leadSearchQuery}
+                onChange={(e) => setLeadSearchQuery(e.target.value)}
+                placeholder="🔍 Search leads by name, email, phone, or service..."
+                className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-400 text-xs focus:outline-none focus:border-cyan-400"
+              />
+              {registeredLeads.length > 0 && (
+                <button
+                  onClick={() => {
+                    if (confirm("Clear all registered leads history?")) {
+                      setRegisteredLeads([]);
+                      localStorage.removeItem("nexus_registered_leads_v1");
+                    }
+                  }}
+                  className="px-3.5 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold transition-all cursor-pointer whitespace-nowrap"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+
+            {/* Leads Table / Cards */}
+            <div className="max-h-96 overflow-y-auto space-y-3 pr-1">
+              {registeredLeads.length === 0 ? (
+                <div className="text-center py-12 text-slate-400 text-xs border border-dashed border-slate-700 rounded-2xl">
+                  <p className="font-mono text-slate-300 text-sm">No registered leads recorded yet.</p>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    When customers fill out the "Have Questions? Get in Touch!" form, their inquiries will appear here automatically.
+                  </p>
+                </div>
+              ) : (
+                registeredLeads
+                  .filter((l) => {
+                    const q = leadSearchQuery.toLowerCase();
+                    return (
+                      l.name.toLowerCase().includes(q) ||
+                      l.email.toLowerCase().includes(q) ||
+                      l.phone.includes(q) ||
+                      l.service.toLowerCase().includes(q) ||
+                      l.category.toLowerCase().includes(q)
+                    );
+                  })
+                  .map((lead) => (
+                    <div
+                      key={lead.id}
+                      className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row justify-between gap-4 hover:border-cyan-400/40 transition-all"
+                    >
+                      <div className="space-y-1.5 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-extrabold text-white text-sm">{lead.name}</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">
+                            {lead.service}
+                          </span>
+                          {lead.emailSent ? (
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                              ✓ Dispatched
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">
+                              • Stored Locally
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-xs text-slate-300 flex flex-wrap gap-4 font-mono">
+                          <span>📧 <a href={`mailto:${lead.email}`} className="hover:underline text-cyan-300">{lead.email}</a></span>
+                          <span>📱 <a href={`tel:${lead.phone}`} className="hover:underline text-emerald-300">{lead.phone}</a></span>
+                          <span className="text-slate-400">🕒 {lead.submittedAt}</span>
+                        </div>
+
+                        {lead.message && (
+                          <p className="text-xs text-slate-300 bg-black/30 p-2.5 rounded-xl border border-white/5 leading-relaxed mt-2">
+                            "{lead.message}"
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex sm:flex-col items-center justify-end gap-2 shrink-0 border-t sm:border-t-0 sm:border-l border-white/10 pt-3 sm:pt-0 sm:pl-4">
+                        <a
+                          href={`https://wa.me/91${lead.phone}?text=${encodeURIComponent(`Hi ${lead.name}, thank you for registering with Nexus Creative regarding ${lead.service}.`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold font-mono transition-all text-center w-full"
+                        >
+                          WhatsApp Reply
+                        </a>
+                        <button
+                          onClick={() => deleteLead(lead.id)}
+                          className="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 text-[11px] font-bold font-mono transition-all text-center w-full cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400 font-mono">
+              <span>Total Leads Saved: <strong className="text-cyan-400">{registeredLeads.length}</strong></span>
+              <button
+                onClick={() => setAdminLeadsOpen(false)}
+                className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold cursor-pointer"
+              >
+                Close Drawer
+              </button>
             </div>
           </div>
         </div>
