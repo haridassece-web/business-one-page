@@ -92,6 +92,32 @@
   100% { transform: translateY(1000%); }
 }
 
+@keyframes rotate-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes rotate-slow-reverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes hologram-pulse {
+  0%, 100% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 15px rgba(0, 210, 255, 0.45));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 35px rgba(0, 210, 255, 0.85));
+  }
+}
+
 .animate-float {
   animation: float 5s ease-in-out infinite;
 }
@@ -102,6 +128,22 @@
 
 .animate-pulse-glow {
   animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-rotate-slow {
+  animation: rotate-slow 22s linear infinite;
+}
+
+.animate-rotate-slow-reverse {
+  animation: rotate-slow-reverse 18s linear infinite;
+}
+
+.animate-radar-sweep {
+  animation: radar-sweep 8s linear infinite;
+}
+
+.animate-hologram-pulse {
+  animation: hologram-pulse 4s ease-in-out infinite;
 }
 
 /* Cyber Grids & Backgrounds */

@@ -1,12 +1,13 @@
 import { useState, useId } from "react";
-import heroCreativeImg from "./assets/hero-creative.jpg";
 import mobileTabletImg from "./assets/mobile-tablet-ui.jpg";
 import desktopWorkspaceImg from "./assets/desktop-workspace-ui.jpg";
 import laptopMegaphoneImg from "./assets/laptop-megaphone-marketing.jpg";
 import { SERVICES_CATEGORIES, ALL_FLAT_SERVICES } from "./data/servicesData";
 import { PORTFOLIO_PROJECTS, PortfolioItem } from "./data/portfolioData";
 import nexusLogoImg from "./assets/nexus-logo.png";
-import nexusCoverImg from "./assets/nexus-cover.png";
+import QuantumCore3D from "./components/QuantumCore3D";
+import FounderHero3D from "./components/FounderHero3D";
+import NetworkInfrastructureSection from "./components/NetworkInfrastructureSection";
 
 // View mode switcher: Unified, Template 1 (Agency), Template 2 (Marketing)
 type ViewMode = "unified" | "agency" | "marketing";
@@ -186,6 +187,22 @@ const UI_UX_SERVICES = [
     ],
     metric: "< 0.8s Global Load",
   },
+  {
+    id: "networking-hardware",
+    title: "Networking & IT Infrastructure",
+    icon: "🖧",
+    accentColor: "border-emerald-500/40 text-emerald-400 bg-emerald-500/10",
+    btnColor: "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500",
+    description:
+      "Enterprise router, firewall & managed switch configuration, structured Cat6A/fiber cabling, server rack installations, and 24/7 network security AMC.",
+    details: [
+      "Router & Firewall Configuration (Fortinet, Cisco, pfSense, Sophos)",
+      "Managed L2/L3 Switch Deployment & 802.1Q VLAN Segmentation",
+      "Hardware Installation, Server Rack Mounting & Patch Panels",
+      "Site-to-Site IPsec VPN, Wi-Fi 6 APs & 24/7 AMC Maintenance",
+    ],
+    metric: "99.99% Network Uptime",
+  },
 ];
 
 const EXPERTISE_CARDS = [
@@ -241,6 +258,7 @@ export interface RegisteredLead {
 
 export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>("unified");
+  const [heroVisualMode, setHeroVisualMode] = useState<"founder" | "quantum">("founder");
   const [selectedServiceModal, setSelectedServiceModal] = useState<typeof UI_UX_SERVICES[0] | null>(null);
   const [selectedMarketingNode, setSelectedMarketingNode] = useState<MarketingNode | null>(MARKETING_NODES[0]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -475,6 +493,57 @@ export default function App() {
     }
   };
 
+  const handleRequestSiteSurvey = () => {
+    setFormData((prev) => ({
+      ...prev,
+      category: "Networking Solutions",
+      service: "Installation & Commissioning",
+      message:
+        "Hi Nexus Creative, I would like to request an on-site technical survey and infrastructure assessment for our premises.",
+    }));
+    setInquiryToast("Site Survey Request Brief Loaded");
+    setTimeout(() => setInquiryToast(null), 6000);
+
+    const contactEl = document.getElementById("contact");
+    if (contactEl) {
+      contactEl.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleGetProjectQuote = () => {
+    setFormData((prev) => ({
+      ...prev,
+      category: "Networking Solutions",
+      service: "Routers, Switches & Firewalls",
+      message:
+        "Hi Nexus Creative, I would like to request an itemized project quote with equipment supply, cabling, and commissioning breakdown.",
+    }));
+    setInquiryToast("Project Quote Brief Loaded");
+    setTimeout(() => setInquiryToast(null), 6000);
+
+    const contactEl = document.getElementById("contact");
+    if (contactEl) {
+      contactEl.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleAnnualMaintenance = () => {
+    setFormData((prev) => ({
+      ...prev,
+      category: "Networking Solutions",
+      service: "Troubleshooting & AMC Support",
+      message:
+        "Hi Nexus Creative, I would like to inquire about an Annual Maintenance Contract (AMC) and preventive support for our business network.",
+    }));
+    setInquiryToast("AMC Inquiry Brief Loaded");
+    setTimeout(() => setInquiryToast(null), 6000);
+
+    const contactEl = document.getElementById("contact");
+    if (contactEl) {
+      contactEl.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const getProjectWhatsAppUrl = (project: PortfolioItem) => {
     const text = encodeURIComponent(
       `Hello Nexus Creative! I saw your "${project.name}" (${project.title}) project in your portfolio.\n` +
@@ -549,7 +618,7 @@ export default function App() {
                 NEXUS <span className="text-cyan-400 text-glow-cyan">CREATIVE</span>
               </span>
               <span className="text-[9px] uppercase font-mono tracking-widest text-slate-400 mt-1 whitespace-nowrap hidden xs:inline">
-                IDEAS • DESIGN • DIGITAL GROWTH
+                DIGITAL SOLUTIONS &amp; NETWORK INFRASTRUCTURE
               </span>
             </div>
           </a>
@@ -558,6 +627,16 @@ export default function App() {
           <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-xs xl:text-sm font-medium text-slate-300 whitespace-nowrap">
             <a href="#home" className="hover:text-cyan-400 transition-colors">
               Home
+            </a>
+            <a href="#core-pillars" className="hover:text-cyan-400 transition-colors">
+              Divisions
+            </a>
+            <a
+              href="#network-infrastructure"
+              className="text-emerald-300 hover:text-emerald-200 transition-colors font-semibold flex items-center gap-1.5"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Network &amp; IT</span>
             </a>
             <a href="#about" className="hover:text-cyan-400 transition-colors">
               About
@@ -665,7 +744,7 @@ export default function App() {
                     <div className="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2.5">
                       <span>SERVICES DIRECTORY</span>
                       <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                        9 DIVISIONS • 52 SPECIALIZED SERVICES
+                        {SERVICES_CATEGORIES.length} DIVISIONS • {ALL_FLAT_SERVICES.length} SPECIALIZED SERVICES
                       </span>
                     </div>
                     <div className="text-xs text-slate-400">
@@ -680,7 +759,7 @@ export default function App() {
                     type="text"
                     value={servicesSearch}
                     onChange={(e) => setServicesSearch(e.target.value)}
-                    placeholder="Search 52 services (e.g. Shopify, SEO, Python)..."
+                    placeholder={`Search ${ALL_FLAT_SERVICES.length} services (e.g. Router, Firewall, Switch, Python)...`}
                     className="w-full pl-9 pr-8 py-2 bg-[#030612] border border-cyan-500/30 focus:border-cyan-400 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 transition-all"
                   />
                   <span className="absolute left-3 top-2 text-slate-400 text-xs">🔍</span>
@@ -791,8 +870,8 @@ export default function App() {
                   {/* Horizontal Divider Line */}
                   <div className="h-[1px] bg-white/10 w-full" />
 
-                  {/* ROW 2: 4 Columns (Softwares, Digital Marketing, Market Place, Domain & Hosting) */}
-                  <div className="grid grid-cols-4 gap-6">
+                  {/* ROW 2: 5 Columns (Softwares, Digital Marketing, Market Place, Domain & Hosting, Networking Solutions) */}
+                  <div className="grid grid-cols-5 gap-6">
                     {SERVICES_CATEGORIES.filter((cat) => cat.row === 2).map((cat) => (
                       <div key={cat.id} className="space-y-2.5">
                         {/* Category Heading with Distinct Cyan Underline Accent (matches screenshot) */}
@@ -895,7 +974,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-2">
                   <span className="text-cyan-400 font-bold">✦</span>
-                  <span>Services (52 Specialized Solutions)</span>
+                  <span>Services ({ALL_FLAT_SERVICES.length} Specialized Solutions)</span>
                 </div>
                 <span className="text-xs text-cyan-400 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
                   {mobileServicesAccordion ? "Close ▲" : "Explore ▼"}
@@ -928,6 +1007,21 @@ export default function App() {
               )}
             </div>
 
+            <a
+              href="#core-pillars"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-slate-200 hover:text-cyan-400 py-1"
+            >
+              Core Divisions
+            </a>
+            <a
+              href="#network-infrastructure"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-emerald-300 hover:text-emerald-200 font-bold py-1 flex items-center gap-2"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Network &amp; IT Infrastructure</span>
+            </a>
             <a
               href="#services"
               onClick={() => setMobileMenuOpen(false)}
@@ -979,57 +1073,61 @@ export default function App() {
           className="relative pt-10 pb-20 md:pt-14 md:pb-28 overflow-hidden bg-grid-cyber border-b border-white/10"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Official Brand Cover Billboard Banner */}
-            <div className="mb-14 rounded-3xl overflow-hidden border-2 border-cyan-500/35 shadow-2xl shadow-cyan-500/20 bg-[#060b1c] group relative">
-              <img
-                src={nexusCoverImg}
-                alt="Nexus Creative - Ideas • Design • Digital Growth - Official Agency Cover"
-                className="w-full h-auto object-cover group-hover:scale-[1.01] transition-transform duration-700"
-              />
-              <div className="absolute top-4 right-4 hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#050914]/85 backdrop-blur-md border border-cyan-400/40 text-xs font-mono text-cyan-300 shadow-lg">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>OFFICIAL NEXUS CREATIVE COVER</span>
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               {/* Left Column: Hero Text */}
               <div className="lg:col-span-7 space-y-7 text-left">
-                {/* Status Pill */}
-                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-xs text-cyan-300 font-mono shadow-lg shadow-cyan-500/10">
+                {/* Status Pill with Official Slogan */}
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-500/40 text-xs text-cyan-300 font-mono shadow-lg shadow-cyan-500/10">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                  <span>PREMIUM DIGITAL AGENCY & GROWTH ACCELERATOR</span>
+                  <span className="tracking-wide">CONNECTING BUSINESSES • EMPOWERING GROWTH</span>
                 </div>
 
-                {/* Big Bold Headline matching Template 1 */}
+                {/* Big Bold Headline */}
                 <div className="space-y-2">
-                  <h2 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white uppercase">
-                    CREATIVE
+                  <h2 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white uppercase">
+                    NEXUS CREATIVE
                   </h2>
-                  <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight uppercase bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent text-glow-cyan">
-                    DIGITAL AGENCY
+                  <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight uppercase bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent text-glow-cyan leading-tight">
+                    DIGITAL SOLUTIONS &amp; NETWORK INFRASTRUCTURE
                   </h1>
                 </div>
 
-                {/* Subtitle */}
-                <p className="text-lg md:text-xl text-slate-300 font-normal max-w-xl leading-relaxed">
-                  We build stunning digital experiences that drive success. From bespoke UI/UX
-                  interfaces to enterprise full-stack development and ROI-engineered marketing.
-                </p>
+                {/* Official Slogan & Subtitle */}
+                <div className="space-y-2">
+                  <p className="text-lg sm:text-xl font-bold text-white tracking-wide">
+                    Connecting Businesses. Empowering Growth.
+                  </p>
+                  <p className="text-sm sm:text-base text-slate-300 font-normal max-w-xl leading-relaxed">
+                    End-to-end technology partner delivering high-performing web platforms, scalable marketing funnels, enterprise router &amp; firewall security, and resilient IT networks.
+                  </p>
+                </div>
+
+                {/* Core Capabilities Ribbon */}
+                <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs">
+                  {["Web", "Digital Marketing", "Networking", "Security", "Infrastructure"].map((pill, pIdx) => (
+                    <span
+                      key={pIdx}
+                      className="px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-semibold flex items-center gap-1.5 shadow-xs"
+                    >
+                      <span className="text-cyan-400">✦</span>
+                      <span>{pill}</span>
+                    </span>
+                  ))}
+                </div>
 
                 {/* CTAs */}
                 <div className="flex flex-wrap items-center gap-4 pt-2">
                   <a
-                    href="#services"
+                    href="#core-pillars"
                     className="px-8 py-4 rounded-xl glow-blue-btn text-white font-bold text-sm tracking-wider uppercase shadow-xl"
                   >
-                    GET STARTED
+                    EXPLORE DIVISIONS
                   </a>
                   <a
-                    href="#marketing-hub"
+                    href="#contact"
                     className="px-7 py-4 rounded-xl border border-cyan-500/40 bg-[#0b1329]/80 hover:bg-cyan-500/10 text-cyan-300 font-bold text-sm tracking-wide transition-all flex items-center gap-2"
                   >
-                    <span>Explore Marketing Hub</span>
+                    <span>Get Free Consultation</span>
                     <span>→</span>
                   </a>
                 </div>
@@ -1051,42 +1149,226 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Right Column: Hero Visual Asset (Profile with Electric Blue Backdrop) */}
-              <div className="lg:col-span-5 relative">
-                <div className="relative mx-auto max-w-md lg:max-w-none">
-                  {/* Glowing background halo */}
-                  <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-cyan-500/30 via-blue-600/30 to-purple-600/30 blur-2xl -z-10" />
+              {/* Right Column: Hero Visual Asset (Cinematic 3D Quantum Core by Default) */}
+              <div className="lg:col-span-5 relative space-y-3">
+                {/* Visual Mode Selector Tabs */}
+                <div className="flex items-center justify-between px-1">
+                  <div className="inline-flex p-1 rounded-xl bg-[#091126]/90 border border-cyan-500/30 backdrop-blur-md text-xs font-mono">
+                    <button
+                      type="button"
+                      onClick={() => setHeroVisualMode("founder")}
+                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                        heroVisualMode === "founder"
+                          ? "bg-cyan-500 text-black font-extrabold shadow-md shadow-cyan-500/30"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>3D FOUNDER (CINEMATIC)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHeroVisualMode("quantum")}
+                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                        heroVisualMode === "quantum"
+                          ? "bg-cyan-500 text-black font-extrabold shadow-md shadow-cyan-500/30"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <span>QUANTUM 3D SUITE</span>
+                    </button>
+                  </div>
 
-                  {/* Frame Container */}
-                  <div className="relative rounded-3xl overflow-hidden border border-cyan-500/40 shadow-2xl shadow-cyan-500/20 bg-[#0a1128]">
-                    <img
-                      src={heroCreativeImg}
-                      alt="Creative Digital Agency Lead"
-                      className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
-                    />
+                  <span className="text-[10px] text-cyan-400/80 font-mono tracking-wider hidden sm:inline">
+                    {heroVisualMode === "founder" ? "3D ANIMATED PORTRAIT" : "INTERACTIVE 3D ENGINE"}
+                  </span>
+                </div>
 
-                    {/* Floating HUD chips */}
-                    <div className="absolute top-4 right-4 bg-[#050914]/85 backdrop-blur-md border border-cyan-400/40 rounded-xl px-3.5 py-2 text-xs flex items-center gap-2 shadow-lg">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                      <span className="font-mono text-cyan-300 font-bold">Top Agency 2026</span>
-                    </div>
+                {heroVisualMode === "founder" ? (
+                  <FounderHero3D
+                    onHireClick={() => {
+                      const contactEl = document.getElementById("contact");
+                      if (contactEl) contactEl.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  />
+                ) : (
+                  <QuantumCore3D
+                    onHireClick={() => {
+                      const contactEl = document.getElementById("contact");
+                      if (contactEl) contactEl.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
-                    <div className="absolute bottom-4 left-4 right-4 bg-[#050914]/90 backdrop-blur-md border border-white/15 rounded-2xl p-4 flex items-center justify-between">
+      {/* ========================================================================= */}
+      {/* CORE DIVISIONS: 1. DIGITAL SOLUTIONS & 2. NETWORKING & IT INFRASTRUCTURE   */}
+      {/* ========================================================================= */}
+      {(viewMode === "unified" || viewMode === "agency") && (
+        <section id="core-pillars" className="py-20 md:py-24 relative bg-[#040815] border-b border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span>NEXUS CREATIVE CORE CAPABILITIES</span>
+              </div>
+              <h3 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
+                Connecting Businesses. Empowering Growth.
+              </h3>
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                Nexus Creative integrates end-to-end digital presence engineering with mission-critical enterprise network infrastructure.
+              </p>
+            </div>
+
+            {/* Twin Core Pillar Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Pillar 1: Digital Solutions */}
+              <div className="glass-cyber-card rounded-3xl p-8 sm:p-10 border border-cyan-500/30 relative overflow-hidden flex flex-col justify-between group hover:border-cyan-400 transition-all duration-300 shadow-xl shadow-cyan-950/40">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-3xl font-bold shadow-inner group-hover:scale-105 transition-transform">
+                        🌐
+                      </div>
                       <div>
-                        <div className="text-xs text-slate-400 font-mono">Performance Matrix</div>
-                        <div className="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
-                          <span>A+ Web Vitals Certified</span>
-                          <span className="text-cyan-400">⚡</span>
+                        <span className="text-xs font-mono text-cyan-400 font-bold uppercase tracking-wider">
+                          Division 01
+                        </span>
+                        <h4 className="text-2xl sm:text-3xl font-black text-white">
+                          Digital Solutions
+                        </h4>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                      Web &amp; Growth
+                    </span>
+                  </div>
+
+                  <p className="text-base sm:text-lg text-cyan-300 font-semibold leading-snug">
+                    "Build your digital presence and grow online."
+                  </p>
+
+                  <div className="space-y-2.5 pt-1">
+                    {[
+                      { label: "Website development", desc: "Custom full-stack web applications, React 19 & Next.js architectures", icon: "💻" },
+                      { label: "Landing pages", desc: "High-converting, sub-second landing pages engineered for paid ads", icon: "⚡" },
+                      { label: "SEO & digital marketing", desc: "Search engine domination, Google Ads, and omnichannel organic traffic", icon: "🚀" },
+                      { label: "Business branding", desc: "Memorable corporate identity, brand books, design tokens & typography", icon: "🎨" },
+                      { label: "Lead generation", desc: "Automated CRM pipelines, multi-touch funnels & qualified B2B/B2C leads", icon: "📈" },
+                    ].map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-500/40 hover:bg-white/[0.08] transition-all flex items-start gap-3.5"
+                      >
+                        <span className="text-xl shrink-0 mt-0.5">{item.icon}</span>
+                        <div>
+                          <div className="text-sm font-bold text-white flex items-center gap-2">
+                            <span>{item.label}</span>
+                            <span className="text-cyan-400 text-xs">›</span>
+                          </div>
+                          <div className="text-xs text-slate-400 mt-0.5">{item.desc}</div>
                         </div>
                       </div>
-                      <a
-                        href="#contact"
-                        className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-all"
-                      >
-                        Hire Us
-                      </a>
-                    </div>
+                    ))}
                   </div>
+                </div>
+
+                <div className="pt-8 mt-6 border-t border-white/10 flex items-center justify-between gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveCategoryFilter("web-development");
+                      const el = document.getElementById("all-services");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="flex-1 py-3 px-4 rounded-xl bg-cyan-500/15 hover:bg-cyan-500 text-cyan-300 hover:text-black font-bold text-xs uppercase tracking-wider transition-all border border-cyan-500/30 text-center cursor-pointer"
+                  >
+                    Explore Digital Services →
+                  </button>
+                  <a
+                    href="#contact"
+                    className="py-3 px-5 rounded-xl glow-blue-btn text-white font-bold text-xs uppercase tracking-wider text-center"
+                  >
+                    Get Quote
+                  </a>
+                </div>
+              </div>
+
+              {/* Pillar 2: Networking & IT Infrastructure */}
+              <div className="glass-cyber-card rounded-3xl p-8 sm:p-10 border border-emerald-500/30 relative overflow-hidden flex flex-col justify-between group hover:border-emerald-400 transition-all duration-300 shadow-xl shadow-cyan-950/40">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-3xl font-bold shadow-inner group-hover:scale-105 transition-transform">
+                        🖧
+                      </div>
+                      <div>
+                        <span className="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">
+                          Division 02
+                        </span>
+                        <h4 className="text-2xl sm:text-3xl font-black text-white">
+                          Networking &amp; IT Infrastructure
+                        </h4>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                      Hardware &amp; Security
+                    </span>
+                  </div>
+
+                  <p className="text-base sm:text-lg text-emerald-300 font-semibold leading-snug">
+                    "Build, secure and maintain business networks."
+                  </p>
+
+                  <div className="space-y-2.5 pt-1">
+                    {[
+                      { label: "Routers, switches & firewalls", desc: "Cisco, Fortinet, pfSense & MikroTik configuration, VLANs & QoS", icon: "🔒" },
+                      { label: "CCTV & surveillance", desc: "IP camera deployment, motion telemetry, NVR storage & remote mobile monitoring", icon: "📹" },
+                      { label: "LAN, WAN, Wi-Fi & fiber", desc: "High-density Wi-Fi 6 APs, single-mode fiber backbones & campus topology", icon: "📡" },
+                      { label: "Installation & commissioning", desc: "4U–42U server rack mounting, patch panels, cable dressing & turnkey setup", icon: "🛠️" },
+                      { label: "Troubleshooting & AMC", desc: "99.9% uptime SLA contracts, latency diagnostics & 24/7 emergency response", icon: "🕒" },
+                    ].map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-500/40 hover:bg-white/[0.08] transition-all flex items-start gap-3.5"
+                      >
+                        <span className="text-xl shrink-0 mt-0.5">{item.icon}</span>
+                        <div>
+                          <div className="text-sm font-bold text-white flex items-center gap-2">
+                            <span>{item.label}</span>
+                            <span className="text-emerald-400 text-xs">›</span>
+                          </div>
+                          <div className="text-xs text-slate-400 mt-0.5">{item.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-8 mt-6 border-t border-white/10 flex items-center justify-between gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveCategoryFilter("networking-hardware");
+                      const el = document.getElementById("all-services");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="flex-1 py-3 px-4 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 text-emerald-300 hover:text-black font-bold text-xs uppercase tracking-wider transition-all border border-emerald-500/30 text-center cursor-pointer"
+                  >
+                    Explore Networking &amp; IT →
+                  </button>
+                  <a
+                    href="https://wa.me/917010231792?text=Hello%20Nexus%20Creative!%20I%20am%20interested%20in%20your%20Networking%20%26%20IT%20Infrastructure%20services."
+                    target="_blank"
+                    rel="noreferrer"
+                    className="py-3 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider text-center"
+                  >
+                    Direct Inquiry
+                  </a>
                 </div>
               </div>
             </div>
@@ -1168,6 +1450,18 @@ export default function App() {
       )}
 
       {/* ========================================================================= */}
+      {/* DEDICATED NETWORKING & IT INFRASTRUCTURE FLAGSHIP BLUEPRINT SECTION       */}
+      {/* ========================================================================= */}
+      {(viewMode === "unified" || viewMode === "agency") && (
+        <NetworkInfrastructureSection
+          onRequestSiteSurvey={handleRequestSiteSurvey}
+          onGetProjectQuote={handleGetProjectQuote}
+          onAnnualMaintenance={handleAnnualMaintenance}
+          onSelectService={handleSelectService}
+        />
+      )}
+
+      {/* ========================================================================= */}
       {/* SECTION 2: TEMPLATE 1 - "UI/UX LAYOUT" 3-CARD SHOWCASE */}
       {/* ========================================================================= */}
       {(viewMode === "unified" || viewMode === "agency") && (
@@ -1179,16 +1473,15 @@ export default function App() {
                 Core Service Capabilities
               </span>
               <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-white">
-                UI/UX LAYOUT
+                UI/UX LAYOUT &amp; INFRASTRUCTURE
               </h2>
               <p className="text-slate-400 text-base md:text-lg">
-                Crafted with mathematical precision, psychological empathy, and high-performance
-                modern code.
+                Crafted with mathematical precision, psychological empathy, high-performance modern code, and resilient IT networks.
               </p>
             </div>
 
-            {/* 3 Glowing Service Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* 4 Glowing Service Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {UI_UX_SERVICES.map((srv) => (
                 <div
                   key={srv.id}
@@ -1241,20 +1534,20 @@ export default function App() {
             </div>
 
             {/* ========================================================================= */}
-            {/* FULL SERVICES DIRECTORY & CAPABILITIES (52 SPECIALIZED SOLUTIONS) */}
+            {/* FULL SERVICES DIRECTORY & CAPABILITIES (SPECIALIZED SOLUTIONS) */}
             {/* ========================================================================= */}
             <div id="all-services" className="mt-28 pt-20 border-t border-cyan-500/20">
               {/* Directory Header */}
               <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
                 <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                  <span>52 SERVICES ACROSS 9 CORE DIVISIONS</span>
+                  <span>{ALL_FLAT_SERVICES.length} SERVICES ACROSS {SERVICES_CATEGORIES.length} CORE DIVISIONS</span>
                 </div>
                 <h3 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
                   FULL CAPABILITIES DIRECTORY
                 </h3>
                 <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-                  Browse our complete array of digital engineering, custom software, e-commerce, cloud infrastructure, and performance marketing capabilities.
+                  Browse our complete array of digital engineering, custom software, enterprise networking, cloud infrastructure, and performance marketing capabilities.
                 </p>
               </div>
 
@@ -1266,7 +1559,7 @@ export default function App() {
                     type="text"
                     value={directorySearch}
                     onChange={(e) => setDirectorySearch(e.target.value)}
-                    placeholder="Search 52 specialized services (e.g., Shopify, Hospital, SEO, Python, Hosting)..."
+                    placeholder={`Search ${ALL_FLAT_SERVICES.length} specialized services (e.g., Router, Firewall, Switch, Cloud, SEO)...`}
                     className="w-full pl-11 pr-10 py-3.5 bg-[#0a1128] border border-cyan-500/30 focus:border-cyan-400 rounded-2xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all shadow-lg shadow-cyan-950/40"
                   />
                   <span className="absolute left-4 top-3.5 text-base">🔍</span>
@@ -1290,7 +1583,7 @@ export default function App() {
                         : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10"
                     }`}
                   >
-                    All Services (52)
+                    All Services ({ALL_FLAT_SERVICES.length})
                   </button>
                   {SERVICES_CATEGORIES.map((cat) => (
                     <button
@@ -1317,7 +1610,7 @@ export default function App() {
                   <span className="text-cyan-400 font-bold">
                     {filteredDirectoryServices.length}
                   </span>{" "}
-                  of 52 services
+                  of {ALL_FLAT_SERVICES.length} services
                   {activeCategoryFilter !== "all" && (
                     <span className="ml-2 text-slate-400">
                       in <span className="text-white capitalize">{activeCategoryFilter.replace("-", " ")}</span>
@@ -1352,7 +1645,7 @@ export default function App() {
                     }}
                     className="mt-2 px-5 py-2.5 rounded-xl bg-cyan-500 text-black text-xs font-bold hover:bg-cyan-400"
                   >
-                    View All 52 Services
+                    View All {ALL_FLAT_SERVICES.length} Services
                   </button>
                 </div>
               ) : (
@@ -1379,8 +1672,20 @@ export default function App() {
                             {service.name}
                           </h4>
                           <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                            Enterprise-grade {service.name.toLowerCase()} designed for speed, scale, and measurable ROI.
+                            {service.shortDesc || `Enterprise-grade ${service.name.toLowerCase()} designed for speed, scale, and measurable ROI.`}
                           </p>
+                          {service.tags && service.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2.5">
+                              {service.tags.map((tag, tIdx) => (
+                                <span
+                                  key={tIdx}
+                                  className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/5 border border-cyan-500/30 text-cyan-300/90 font-medium"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -2306,10 +2611,16 @@ export default function App() {
           {/* Footer Copyright & Agency Info */}
           <div className="pt-8 border-t border-white/10 text-center font-mono space-y-2">
             <div className="text-[11px] tracking-[0.15em] uppercase text-cyan-400/90 font-bold">
-              © 2026 NEXUS CREATIVE • ALL RIGHTS RESERVED • CHENNAI, INDIA
+              © 2026 NEXUS CREATIVE — DIGITAL SOLUTIONS &amp; NETWORK INFRASTRUCTURE
+            </div>
+            <div className="text-[10px] text-slate-300 tracking-wider font-semibold">
+              CONNECTING BUSINESSES. EMPOWERING GROWTH.
+            </div>
+            <div className="text-[9px] text-slate-400 tracking-wider">
+              WEB • DIGITAL MARKETING • NETWORKING • SECURITY • INFRASTRUCTURE
             </div>
             <div className="text-[10px] text-slate-500 tracking-wider">
-              OFFICIAL EMAIL: HARIDASS@NEXUSCREATIVE.SITE • WEB APPLICATIONS, BESPOKE UI/UX & SCALABLE MARKETING
+              OFFICIAL EMAIL: HARIDASS@NEXUSCREATIVE.SITE • CHENNAI, INDIA
             </div>
           </div>
         </div>
@@ -2368,7 +2679,17 @@ export default function App() {
               </button>
               <a
                 href="#contact"
-                onClick={() => setSelectedServiceModal(null)}
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    category:
+                      selectedServiceModal.id === "networking-hardware"
+                        ? "Networking Solutions"
+                        : "Web Development",
+                    service: selectedServiceModal.title,
+                  }));
+                  setSelectedServiceModal(null);
+                }}
                 className="py-2.5 px-5 rounded-xl glow-cyan-btn text-black font-bold text-xs"
               >
                 Request Quote For This Service →

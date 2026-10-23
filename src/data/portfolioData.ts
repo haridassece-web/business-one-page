@@ -3,6 +3,7 @@ import astroImg from "../assets/portfolio/astro-web.png";
 import gangaiImg from "../assets/portfolio/gangaiamman.png";
 import cargoImg from "../assets/portfolio/cargo-agenda.png";
 import jothiMatrimonyImg from "../assets/portfolio/jothi-matrimony.png";
+import pgAstroImg from "../assets/portfolio/pg-astrologer.png";
 
 export interface PortfolioItem {
   id: string;
@@ -82,6 +83,19 @@ export const PORTFOLIO_PROJECTS: PortfolioItem[] = [
     description:
       "Comprehensive matchmaking web portal tailored for South Indian communities featuring verified bride and groom profile listings, automated horoscope matching, photo search filters, and secure privacy controls.",
     metrics: "10,000+ Verified Profiles • 98.5% Match Accuracy",
+  },
+  {
+    id: "pg-astrologer",
+    name: "PG Astrologer",
+    category: "Vedic Astrology Software / Web Application",
+    title: "Nadi Astrology Calculation Software & Interactive Horoscope Portal",
+    company: "PG Astrologer",
+    technology: "HTML5, CSS3, JavaScript, Planetary Ephemeris API, Chart Engine, Vercel",
+    image: pgAstroImg,
+    liveUrl: "https://pg-astrologer-git-master-haridass-r.vercel.app/",
+    description:
+      "Advanced Nadi astrology calculation software and web platform featuring automated South Indian birth chart generation, planetary combination analysis, real-time Gochara transits, Subhathuvam scoring, and downloadable astrological reports.",
+    metrics: "1,000+ Horoscopes Generated • Real-Time Planetary Ephemeris",
   },
 ];
 
