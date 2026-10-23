@@ -1377,72 +1377,208 @@ export default function App() {
       )}
 
       {/* ========================================================================= */}
-      {/* ABOUT SECTION: WHO WE ARE */}
+      {/* ========================================================================= */}
+      {/* ABOUT SECTION: ABOUT NEXUS CREATIVE */}
       {/* ========================================================================= */}
       {(viewMode === "unified" || viewMode === "agency") && (
         <section
           id="about"
-          className="relative py-20 md:py-24 bg-[#040815] border-b border-white/10 overflow-hidden"
+          className="relative py-24 md:py-32 bg-[#040815] border-b border-white/10 overflow-hidden"
         >
           {/* Subtle Glow Top Divider */}
           <div className="glow-divider w-full absolute top-0 left-0" />
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto text-center space-y-7">
-              {/* Requested Status Pill */}
+          {/* Background Ambient Glows */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-r from-cyan-600/10 via-blue-600/10 to-teal-500/10 blur-[130px] pointer-events-none rounded-full" />
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            {/* Header / Intro */}
+            <div className="max-w-4xl mx-auto text-center space-y-6">
+              {/* Badge */}
               <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-cyan-950/70 border border-cyan-500/40 text-xs font-mono text-cyan-300 shadow-xl shadow-cyan-500/10">
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-                <span className="font-semibold tracking-wide">
-                  Nexuscreative.site • Award-Winning Studio • Web Dev • UI/UX • Growth
+                <span className="font-semibold tracking-wider uppercase">
+                  About Nexus Creative
                 </span>
               </div>
 
-              {/* Requested Headline */}
+              {/* Main Headline */}
               <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white leading-tight">
-                We Engineer High-Performing{" "}
+                Connecting Businesses Through{" "}
                 <span className="bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent text-glow-cyan">
-                  Web Applications, Bespoke UI/UX,
-                </span>{" "}
-                &amp; Scalable Marketing.
+                  Technology
+                </span>
               </h2>
 
-              {/* Requested Subtitle / Paragraph */}
-              <p className="text-base sm:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto font-normal">
-                Hand-crafted web applications, high-converting Figma design systems, and data-driven
-                ad campaigns built for founders who refuse generic templates.
+              {/* Lead Paragraph */}
+              <p className="text-base sm:text-xl text-slate-300 leading-relaxed font-normal">
+                Nexus Creative is a technology solutions provider delivering Digital Solutions and
+                Networking &amp; IT Infrastructure services to businesses, startups, and organizations.
+                We help businesses establish a strong digital presence, improve operational
+                efficiency, and build reliable, secure, and scalable IT infrastructure.
               </p>
+            </div>
 
-              {/* Core Philosophy Highlights Grid */}
-              <div className="pt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-                <div className="glass-cyber-card rounded-2xl p-6 border border-cyan-500/30">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-xl font-bold mb-3">
-                    ⚡
+            {/* Comprehensive Scope & Narrative Grid */}
+            <div className="mt-14 grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+              {/* Dual Services Scope Card */}
+              <div className="glass-cyber-card rounded-2xl p-7 md:p-8 border border-cyan-500/30 flex flex-col justify-between hover:border-cyan-400/50 transition-all duration-300">
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-xl font-bold">
+                      ⚡
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-bold">
+                        Full-Lifecycle Expertise
+                      </span>
+                      <h3 className="text-lg md:text-xl font-bold text-white">
+                        Digital &amp; Infrastructure Services
+                      </h3>
+                    </div>
                   </div>
-                  <h3 className="text-base font-bold text-white mb-1">Sub-Second Performance</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Zero bloat. Built from scratch with React 19, Vite, and Next.js for flawless 95+ Core Web Vitals.
+                  <p className="text-sm md:text-base text-slate-300 leading-relaxed">
+                    Our services span website development, landing page design, digital marketing,
+                    and lead generation, alongside enterprise networking, router and switch
+                    configuration, firewall solutions, CCTV surveillance, structured cabling,
+                    fiber-optic connectivity, installation, configuration, commissioning,
+                    troubleshooting, and annual maintenance services.
                   </p>
                 </div>
 
-                <div className="glass-cyber-card rounded-2xl p-6 border border-purple-500/30">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center text-xl font-bold mb-3">
-                    🎨
+                <div className="mt-6 pt-5 border-t border-white/10 flex flex-wrap gap-2">
+                  <span className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                    Website Development
+                  </span>
+                  <span className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                    Landing Page Design
+                  </span>
+                  <span className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                    Digital Marketing
+                  </span>
+                  <span className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                    Lead Generation
+                  </span>
+                  <span className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                    Routers &amp; Switches
+                  </span>
+                  <span className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                    Firewall Solutions
+                  </span>
+                  <span className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                    CCTV Surveillance
+                  </span>
+                  <span className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                    Structured Cabling &amp; Fiber
+                  </span>
+                  <span className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                    Commissioning &amp; AMC
+                  </span>
+                </div>
+              </div>
+
+              {/* Client-Centric Partnership Card */}
+              <div className="glass-cyber-card rounded-2xl p-7 md:p-8 border border-blue-500/30 flex flex-col justify-between hover:border-blue-400/50 transition-all duration-300">
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-xl font-bold">
+                      🤝
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-blue-400 font-bold">
+                        Trusted Long-Term Partnership
+                      </span>
+                      <h3 className="text-lg md:text-xl font-bold text-white">
+                        Practical, Dependable Solutions
+                      </h3>
+                    </div>
                   </div>
-                  <h3 className="text-base font-bold text-white mb-1">Bespoke UI/UX Systems</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Meticulously organized Figma token architectures, accessible WCAG color scales, and human-first friction-free flows.
+                  <p className="text-sm md:text-base text-slate-300 leading-relaxed">
+                    We focus on understanding each client&apos;s business requirements and providing
+                    practical, cost-effective, and dependable technology solutions. From building a
+                    professional online presence to deploying and maintaining business network
+                    infrastructure, we aim to be a trusted technology partner throughout the
+                    project lifecycle.
+                  </p>
+                  <p className="text-sm md:text-base text-slate-300 leading-relaxed">
+                    At Nexus Creative, we believe technology should simplify business operations,
+                    strengthen connectivity, and create opportunities for sustainable growth.
                   </p>
                 </div>
 
-                <div className="glass-cyber-card rounded-2xl p-6 border border-blue-500/30">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-xl font-bold mb-3">
-                    📈
-                  </div>
-                  <h3 className="text-base font-bold text-white mb-1">Algorithmic Growth</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Full-funnel Google Performance Max and Meta Advantage+ campaigns engineered for verifiable blended ROAS.
-                  </p>
+                <div className="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-xs text-slate-400 font-mono">
+                  <span>Project Lifecycle Support</span>
+                  <span className="text-cyan-400 font-semibold">Reliable &amp; Scalable IT</span>
                 </div>
+              </div>
+            </div>
+
+            {/* Mission & Vision Highlight Cards */}
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Mission Card */}
+              <div className="relative rounded-2xl p-7 md:p-8 bg-gradient-to-br from-cyan-950/40 via-[#061226]/80 to-[#040815] border border-cyan-500/40 shadow-xl shadow-cyan-950/30 hover:border-cyan-400 transition-all duration-300 group">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center text-2xl font-bold shadow-lg shadow-cyan-500/25 shrink-0 group-hover:scale-105 transition-transform">
+                    🎯
+                  </div>
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[11px] font-mono font-bold uppercase tracking-wider text-cyan-300">
+                      Our Mission
+                    </div>
+                    <p className="text-base sm:text-lg text-slate-200 leading-relaxed font-medium">
+                      To deliver reliable, innovative, and cost-effective digital and IT infrastructure
+                      solutions that help businesses grow with confidence.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Vision Card */}
+              <div className="relative rounded-2xl p-7 md:p-8 bg-gradient-to-br from-blue-950/40 via-[#07132a]/80 to-[#040815] border border-blue-500/40 shadow-xl shadow-blue-950/30 hover:border-blue-400 transition-all duration-300 group">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-2xl font-bold shadow-lg shadow-blue-500/25 shrink-0 group-hover:scale-105 transition-transform">
+                    🔭
+                  </div>
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-[11px] font-mono font-bold uppercase tracking-wider text-blue-300">
+                      Our Vision
+                    </div>
+                    <p className="text-base sm:text-lg text-slate-200 leading-relaxed font-medium">
+                      To become a trusted technology partner for businesses by combining digital
+                      innovation with dependable networking and infrastructure services.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Slogan Banner & Call-to-Action Bar */}
+            <div className="mt-12 rounded-2xl p-6 md:p-8 bg-gradient-to-r from-cyan-950/60 via-slate-900/90 to-blue-950/60 border border-cyan-500/40 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+              <div className="space-y-1">
+                <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold">
+                  Official Technology Creed
+                </span>
+                <p className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Nexus Creative —{" "}
+                  <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                    Connecting Businesses Through Technology.
+                  </span>
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href="#network-infrastructure"
+                  className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition-all hover:-translate-y-0.5"
+                >
+                  Explore IT Infrastructure
+                </a>
+                <a
+                  href="#contact"
+                  className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-xs uppercase tracking-wider transition-all"
+                >
+                  Get In Touch
+                </a>
               </div>
             </div>
           </div>
