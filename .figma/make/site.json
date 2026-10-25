@@ -1,7 +1,8 @@
 {
-  "description": "Showcase your design business with a professional portfolio website that highlights your work, attracts clients, and enhances your online presence.",
+  "title": "Nexus Creative — Digital Solutions & Network Infrastructure",
+  "description": "Nexus Creative offers full-stack Web Development, ROI-focused Digital Marketing, Enterprise Cloud Networking, and IT Infrastructure Solutions.",
   "robots": {
-    "index": false
+    "index": true
   },
   "accessibility": {
     "addBypassLinks": false,

@@ -81,7 +81,7 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
     return html.replace(`<!-- ${slotName} -->`, content)
   }
 
-  const title = config.title ?? "Figma Make App"
+  const title = config.title ?? "Nexus Creative — Digital Solutions & Network Infrastructure"
   const description = config.description ?? ''
   const favicon = config.icons?.icon ?? ''
   const socialImage = config.openGraph?.image ?? ''
@@ -91,7 +91,9 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
   const headEnd = config.customScripts?.headEnd ?? ''
   const bodyStart = config.customScripts?.bodyStart ?? ''
   const bodyEnd = config.customScripts?.bodyEnd ?? ''
-  const robotsTxt = config.robots?.index === false ? 'User-agent: *\nDisallow: /\n' : ''
+  const robotsTxt = config.robots?.index === false 
+    ? 'User-agent: *\nDisallow: /\n' 
+    : 'User-agent: *\nAllow: /\nSitemap: https://nexuscreative.site/sitemap.xml\n'
 
   return {
     name: 'figma-site-configuration',
@@ -129,6 +131,9 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
         }
         if (config.robots?.index === false) {
           tags.push({ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' }, injectTo: 'head' })
+        } else {
+          tags.push({ tag: 'meta', attrs: { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' }, injectTo: 'head' })
+          tags.push({ tag: 'meta', attrs: { name: 'googlebot', content: 'index, follow' }, injectTo: 'head' })
         }
         if (favicon) {
           tags.push({ tag: 'link', attrs: { rel: 'icon', href: favicon }, injectTo: 'head' })
