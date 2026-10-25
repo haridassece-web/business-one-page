@@ -6,7 +6,6 @@ import { SERVICES_CATEGORIES, ALL_FLAT_SERVICES } from "./data/servicesData";
 import { PORTFOLIO_PROJECTS, PortfolioItem } from "./data/portfolioData";
 import nexusLogoImg from "./assets/nexus-logo.png";
 import QuantumCore3D from "./components/QuantumCore3D";
-import FounderHero3D from "./components/FounderHero3D";
 import NetworkInfrastructureSection from "./components/NetworkInfrastructureSection";
 
 // View mode switcher: Unified, Template 1 (Agency), Template 2 (Marketing)
@@ -258,7 +257,6 @@ export interface RegisteredLead {
 
 export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>("unified");
-  const [heroVisualMode, setHeroVisualMode] = useState<"founder" | "quantum">("founder");
   const [selectedServiceModal, setSelectedServiceModal] = useState<typeof UI_UX_SERVICES[0] | null>(null);
   const [selectedMarketingNode, setSelectedMarketingNode] = useState<MarketingNode | null>(MARKETING_NODES[0]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1149,56 +1147,14 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Right Column: Hero Visual Asset (Cinematic 3D Quantum Core by Default) */}
-              <div className="lg:col-span-5 relative space-y-3">
-                {/* Visual Mode Selector Tabs */}
-                <div className="flex items-center justify-between px-1">
-                  <div className="inline-flex p-1 rounded-xl bg-[#091126]/90 border border-cyan-500/30 backdrop-blur-md text-xs font-mono">
-                    <button
-                      type="button"
-                      onClick={() => setHeroVisualMode("founder")}
-                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                        heroVisualMode === "founder"
-                          ? "bg-cyan-500 text-black font-extrabold shadow-md shadow-cyan-500/30"
-                          : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>3D FOUNDER (CINEMATIC)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setHeroVisualMode("quantum")}
-                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                        heroVisualMode === "quantum"
-                          ? "bg-cyan-500 text-black font-extrabold shadow-md shadow-cyan-500/30"
-                          : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      <span>QUANTUM 3D SUITE</span>
-                    </button>
-                  </div>
-
-                  <span className="text-[10px] text-cyan-400/80 font-mono tracking-wider hidden sm:inline">
-                    {heroVisualMode === "founder" ? "3D ANIMATED PORTRAIT" : "INTERACTIVE 3D ENGINE"}
-                  </span>
-                </div>
-
-                {heroVisualMode === "founder" ? (
-                  <FounderHero3D
-                    onHireClick={() => {
-                      const contactEl = document.getElementById("contact");
-                      if (contactEl) contactEl.scrollIntoView({ behavior: "smooth" });
-                    }}
-                  />
-                ) : (
-                  <QuantumCore3D
-                    onHireClick={() => {
-                      const contactEl = document.getElementById("contact");
-                      if (contactEl) contactEl.scrollIntoView({ behavior: "smooth" });
-                    }}
-                  />
-                )}
+              {/* Right Column: Hero Visual Asset (Interactive 3D Quantum Engine) */}
+              <div className="lg:col-span-5 relative">
+                <QuantumCore3D
+                  onHireClick={() => {
+                    const contactEl = document.getElementById("contact");
+                    if (contactEl) contactEl.scrollIntoView({ behavior: "smooth" });
+                  }}
+                />
               </div>
             </div>
           </div>
