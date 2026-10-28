@@ -16,6 +16,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="profile" href="http://gmpg.org/xfn/11">
 <link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
+<meta name="description" content="Nexus Creative in Chennai delivers cutting-edge Web Development, Interactive 3D WebGL, SEO, ROI Performance Marketing, Enterprise Routers, Firewalls, CCTV &amp; Network IT Infrastructure. Call +91 70102 31792.">
+<meta name="keywords" content="Nexus Creative, Web Development Chennai, 3D WebGL, SEO Services, Performance Marketing, Enterprise Network Infrastructure, Cisco Router, Fortinet Firewall, CCTV Chennai, IT AMC">
+<meta name="geo.region" content="IN-TN">
+<meta name="geo.placename" content="Chennai">
+<meta name="geo.position" content="13.0645;80.1345">
+<meta name="ICBM" content="13.0645, 80.1345">
+<link rel="canonical" href="https://nexuscreative.site/">
 
 <?php wp_head(); ?>
 <!-- Google tag (gtag.js) -->

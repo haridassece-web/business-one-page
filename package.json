@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build:3d": "node scripts/sync-3d.js",
+    "build": "node scripts/sync-3d.js && vite build",
     "preview": "vite preview",
     "format": "oxfmt"
   },

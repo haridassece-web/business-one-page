@@ -7,6 +7,8 @@ import { PORTFOLIO_PROJECTS, PortfolioItem } from "./data/portfolioData";
 import nexusLogoImg from "./assets/nexus-logo.png";
 import QuantumCore3D from "./components/QuantumCore3D";
 import NetworkInfrastructureSection from "./components/NetworkInfrastructureSection";
+import Nexus3DTechHubSection from "./components/Nexus3DTechHubSection";
+import Hero3DHub from "./components/Hero3DHub";
 
 // View mode switcher: Unified, Template 1 (Agency), Template 2 (Marketing)
 type ViewMode = "unified" | "agency" | "marketing";
@@ -630,6 +632,13 @@ export default function App() {
               Divisions
             </a>
             <a
+              href="#3d-hub"
+              className="text-cyan-300 hover:text-cyan-200 transition-colors font-semibold flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-400/30 shadow-xs"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              <span>3D Tech Hub</span>
+            </a>
+            <a
               href="#network-infrastructure"
               className="text-emerald-300 hover:text-emerald-200 transition-colors font-semibold flex items-center gap-1.5"
             >
@@ -1013,6 +1022,14 @@ export default function App() {
               Core Divisions
             </a>
             <a
+              href="#3d-hub"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-cyan-300 hover:text-cyan-200 font-bold py-1 flex items-center gap-2"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              <span>Interactive 3D Hub (WebGL)</span>
+            </a>
+            <a
               href="#network-infrastructure"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-emerald-300 hover:text-emerald-200 font-bold py-1 flex items-center gap-2"
@@ -1071,9 +1088,9 @@ export default function App() {
           className="relative pt-10 pb-20 md:pt-14 md:pb-28 overflow-hidden bg-grid-cyber border-b border-white/10"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               {/* Left Column: Hero Text */}
-              <div className="lg:col-span-7 space-y-7 text-left">
+              <div className="lg:col-span-6 space-y-7 text-left">
                 {/* Status Pill with Official Slogan */}
                 <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-500/40 text-xs text-cyan-300 font-mono shadow-lg shadow-cyan-500/10">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
@@ -1117,16 +1134,22 @@ export default function App() {
                 <div className="flex flex-wrap items-center gap-4 pt-2">
                   <a
                     href="#core-pillars"
-                    className="px-8 py-4 rounded-xl glow-blue-btn text-white font-bold text-sm tracking-wider uppercase shadow-xl"
+                    className="px-7 py-4 rounded-xl glow-blue-btn text-white font-bold text-sm tracking-wider uppercase shadow-xl"
                   >
                     EXPLORE DIVISIONS
                   </a>
                   <a
-                    href="#contact"
-                    className="px-7 py-4 rounded-xl border border-cyan-500/40 bg-[#0b1329]/80 hover:bg-cyan-500/10 text-cyan-300 font-bold text-sm tracking-wide transition-all flex items-center gap-2"
+                    href="#3d-hub"
+                    className="px-6 py-4 rounded-xl border border-cyan-500/40 bg-cyan-950/40 hover:bg-cyan-500/20 text-cyan-300 font-bold text-sm tracking-wide transition-all flex items-center gap-2"
                   >
-                    <span>Get Free Consultation</span>
-                    <span>→</span>
+                    <span>⚡ Full 3D Hub</span>
+                    <span>↓</span>
+                  </a>
+                  <a
+                    href="#contact"
+                    className="px-6 py-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-slate-200 font-bold text-sm tracking-wide transition-all"
+                  >
+                    Get Consultation →
                   </a>
                 </div>
 
@@ -1147,13 +1170,14 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Right Column: Hero Visual Asset (Interactive 3D Quantum Engine) */}
-              <div className="lg:col-span-5 relative">
-                <QuantumCore3D
+              {/* Right Column: Hero Visual Asset (Interactive 3D Technology Hub) */}
+              <div className="lg:col-span-6 relative">
+                <Hero3DHub
                   onHireClick={() => {
                     const contactEl = document.getElementById("contact");
                     if (contactEl) contactEl.scrollIntoView({ behavior: "smooth" });
                   }}
+                  onRequestQuote={handleGetProjectQuote}
                 />
               </div>
             </div>
@@ -1550,6 +1574,16 @@ export default function App() {
           onGetProjectQuote={handleGetProjectQuote}
           onAnnualMaintenance={handleAnnualMaintenance}
           onSelectService={handleSelectService}
+        />
+      )}
+
+      {/* ========================================================================= */}
+      {/* INTERACTIVE 3D TECHNOLOGY HUB SHOWCASE (NEXUS-CREATIVE-3D)                 */}
+      {/* ========================================================================= */}
+      {(viewMode === "unified" || viewMode === "agency") && (
+        <Nexus3DTechHubSection
+          onSelectService={handleSelectService}
+          onRequestSurvey={handleRequestSiteSurvey}
         />
       )}
 
@@ -2666,6 +2700,10 @@ export default function App() {
             <div className="flex flex-wrap items-center gap-6 font-mono text-xs">
               <a href="#home" className="hover:text-cyan-400">
                 Home
+              </a>
+              <a href="#3d-hub" className="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1">
+                <span>✦</span>
+                <span>3D Tech Hub</span>
               </a>
               <a href="#about" className="hover:text-cyan-400">
                 About

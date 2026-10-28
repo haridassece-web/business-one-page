@@ -1,4 +1,20 @@
 User-agent: *
 Allow: /
+Allow: /3d-hub/
+Allow: /nexus-creative-3d/
+Disallow: /admin
+Disallow: /send-email.php
+
+User-agent: Googlebot
+Allow: /
+Allow: /3d-hub/
+Allow: /*.js
+Allow: /*.css
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.svg
+
+User-agent: Bingbot
+Allow: /
 
 Sitemap: https://nexuscreative.site/sitemap.xml
