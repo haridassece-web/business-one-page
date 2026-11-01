@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import QuantumCore3D from "./QuantumCore3D";
+import { get3DHubUrl, get3DHubStandaloneUrl } from "../utils/hub3d";
 
 interface Hero3DHubProps {
   onHireClick?: () => void;
@@ -13,7 +14,28 @@ export default function Hero3DHub({ onHireClick, onRequestQuote }: Hero3DHubProp
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const iframeSrc = `./3d-hub/index.html?embed=true&theme=${theme}`;
+  const iframeSrc = get3DHubUrl(theme, true);
+  const standaloneSrc = get3DHubStandaloneUrl(theme);
+
+  useEffect(() => {
+    setIsLoading(true);
+    // Safety fallback: ensure spinner never hangs if iframe load is delayed
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === "NEXUS_3D_READY") {
+        setIsLoading(false);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [iframeKey, theme]);
 
   const handleResetCamera = () => {
     setIsLoading(true);
@@ -93,7 +115,7 @@ export default function Hero3DHub({ onHireClick, onRequestQuote }: Hero3DHubProp
                 </button>
 
                 <a
-                  href="./3d-hub/index.html"
+                  href={standaloneSrc}
                   target="_blank"
                   rel="noreferrer"
                   title="Open standalone 3D site"
@@ -124,6 +146,7 @@ export default function Hero3DHub({ onHireClick, onRequestQuote }: Hero3DHubProp
                   src={iframeSrc}
                   title="Nexus Creative Interactive 3D Hero Hub"
                   onLoad={() => setIsLoading(false)}
+                  onError={() => setIsLoading(false)}
                   className="w-full h-full border-0 block"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
                 />
@@ -238,7 +261,7 @@ export default function Hero3DHub({ onHireClick, onRequestQuote }: Hero3DHubProp
                 <span>Drag to orbit • Scroll to zoom • Touch to rotate</span>
               </span>
               <a
-                href="./3d-hub/index.html"
+                href={standaloneSrc}
                 target="_blank"
                 rel="noreferrer"
                 className="text-cyan-400 hover:text-cyan-300 underline font-semibold"

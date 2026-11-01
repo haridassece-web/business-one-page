@@ -12,13 +12,15 @@ const dist3dDir = path.join(nexus3dDir, 'dist');
 const public3dHub = path.join(rootDir, 'public', '3d-hub');
 const publicNexus3d = path.join(rootDir, 'public', 'nexus-creative-3d');
 
+const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
 if (!fs.existsSync(nodeModules3d)) {
   console.log('📦 Installing nexus-creative-3d dependencies...');
-  execSync('npm install', { cwd: nexus3dDir, stdio: 'inherit', shell: true });
+  execSync(`${npmCmd} install`, { cwd: nexus3dDir, stdio: 'inherit', shell: true });
 }
 
 console.log('🚀 Building nexus-creative-3d...');
-execSync('npm run build', { cwd: nexus3dDir, stdio: 'inherit', shell: true });
+execSync(`${npmCmd} run build`, { cwd: nexus3dDir, stdio: 'inherit', shell: true });
 
 console.log('📦 Syncing 3D build to public/3d-hub and public/nexus-creative-3d...');
 fs.rmSync(public3dHub, { recursive: true, force: true });

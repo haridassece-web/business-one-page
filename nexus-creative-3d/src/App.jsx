@@ -1,6 +1,6 @@
 import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { ContactShadows, Environment, Float, Html, OrbitControls, RoundedBox, Text } from '@react-three/drei';
+import { ContactShadows, Float, Html, OrbitControls, RoundedBox, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
 const blue = '#087cf0';
@@ -172,6 +172,14 @@ function BrandMark({ isDark = false }) {
 }
 
 function Scene({ isDark = false }) {
+  useEffect(() => {
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'NEXUS_3D_READY' }, '*');
+      }
+    } catch (e) {}
+  }, []);
+
   const hub = useRef();
   useFrame((state, delta) => {
     if (hub.current) {
@@ -304,8 +312,10 @@ export default function App() {
               </Html>
             }
           >
+            <hemisphereLight intensity={isDark ? 0.9 : 1.3} color="#38bdf8" groundColor="#061226" />
+            <directionalLight position={[-5, 7, -4]} intensity={isDark ? 1.2 : 1.4} color="#60a5fa" />
+            <directionalLight position={[6, -3, 5]} intensity={isDark ? 0.6 : 0.8} color="#818cf8" />
             <Scene isDark={isDark} />
-            <Environment preset="city" />
           </Suspense>
           <OrbitControls
             ref={controlsRef}
@@ -507,8 +517,10 @@ export default function App() {
                 </Html>
               }
             >
+              <hemisphereLight intensity={isDark ? 0.9 : 1.3} color="#38bdf8" groundColor="#061226" />
+              <directionalLight position={[-5, 7, -4]} intensity={isDark ? 1.2 : 1.4} color="#60a5fa" />
+              <directionalLight position={[6, -3, 5]} intensity={isDark ? 0.6 : 0.8} color="#818cf8" />
               <Scene isDark={isDark} />
-              <Environment preset="city" />
             </Suspense>
             <OrbitControls
               ref={controlsRef}

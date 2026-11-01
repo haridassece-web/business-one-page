@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { get3DHubUrl, get3DHubStandaloneUrl } from "../utils/hub3d";
 
 interface Nexus3DTechHubSectionProps {
   onSelectService?: (serviceName: string) => void;
@@ -14,6 +15,29 @@ export default function Nexus3DTechHubSection({
   const [iframeKey, setIframeKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedHighlight, setSelectedHighlight] = useState<number>(0);
+
+  const iframeSrc = get3DHubUrl(theme, true);
+  const standaloneSrc = get3DHubStandaloneUrl(theme);
+
+  useEffect(() => {
+    setIsLoading(true);
+    // Safety fallback: ensure spinner never hangs indefinitely
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === "NEXUS_3D_READY") {
+        setIsLoading(false);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [iframeKey, theme]);
 
   const HIGHLIGHTS = [
     {
@@ -67,8 +91,6 @@ export default function Nexus3DTechHubSection({
     { symbol: "⟿", title: "Fiber & Cabling" },
     { symbol: "⚙", title: "Installation & Commissioning" },
   ];
-
-  const iframeSrc = `./3d-hub/index.html?embed=true&theme=${theme}`;
 
   return (
     <section id="3d-hub" className="py-20 md:py-28 relative bg-[#040817] border-b border-cyan-500/20 overflow-hidden">
@@ -148,7 +170,7 @@ export default function Nexus3DTechHubSection({
 
               {/* Standalone Window */}
               <a
-                href="./3d-hub/index.html"
+                href={standaloneSrc}
                 target="_blank"
                 rel="noreferrer"
                 className="px-3 py-1.5 rounded-xl border border-white/20 bg-white/5 hover:bg-white/15 text-slate-200 text-xs font-semibold transition-all flex items-center gap-1"
@@ -179,6 +201,7 @@ export default function Nexus3DTechHubSection({
               src={iframeSrc}
               title="Nexus Creative Interactive 3D Hub"
               onLoad={() => setIsLoading(false)}
+              onError={() => setIsLoading(false)}
               className="w-full h-full border-0 block"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
             />
@@ -353,7 +376,7 @@ export default function Nexus3DTechHubSection({
                 <span>Orbit with mouse or finger gestures · Scroll to zoom</span>
               </span>
               <a
-                href="./3d-hub/index.html"
+                href={standaloneSrc}
                 target="_blank"
                 rel="noreferrer"
                 className="text-cyan-400 hover:text-cyan-300 underline font-semibold"
