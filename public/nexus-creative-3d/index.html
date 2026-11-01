@@ -6,7 +6,19 @@
     <meta name="theme-color" content="#f5f8fc" />
     <meta name="description" content="Nexus Creative — Digital Solutions & Network Infrastructure" />
     <title>Nexus Creative | 3D Technology Hub</title>
-    <script type="module" crossorigin src="./assets/index-B0lHTlvT.js"></script>
+    <script>
+      (function() {
+        var p = window.location.pathname || '';
+        // If accessed as /3d-hub or /nexus-creative-3d without trailing slash,
+        // dynamically inject <base> so all relative ./assets/... resolve correctly
+        if (!p.endsWith('/') && !/\.[a-zA-Z0-9]+$/.test(p)) {
+          var base = document.createElement('base');
+          base.href = window.location.origin + p + '/';
+          document.head.appendChild(base);
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-CD0oAEtA.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-CEP8a94T.css">
   </head>
   <body>

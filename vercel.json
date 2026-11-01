@@ -3,10 +3,23 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "outputDirectory": "dist",
-  "cleanUrls": true,
+  "cleanUrls": false,
+  "trailingSlash": true,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/3d-hub/:match*",
+      "destination": "/3d-hub/:match*"
+    },
+    {
+      "source": "/nexus-creative-3d/:match*",
+      "destination": "/nexus-creative-3d/:match*"
+    },
+    {
+      "source": "/assets/:match*",
+      "destination": "/assets/:match*"
+    },
+    {
+      "source": "/((?!3d-hub|nexus-creative-3d|assets).*)",
       "destination": "/index.html"
     }
   ]

@@ -11,6 +11,7 @@ const nodeModules3d = path.join(nexus3dDir, 'node_modules');
 const dist3dDir = path.join(nexus3dDir, 'dist');
 const public3dHub = path.join(rootDir, 'public', '3d-hub');
 const publicNexus3d = path.join(rootDir, 'public', 'nexus-creative-3d');
+const publicAssets = path.join(rootDir, 'public', 'assets');
 
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
@@ -30,5 +31,12 @@ fs.cpSync(dist3dDir, public3dHub, { recursive: true });
 fs.rmSync(publicNexus3d, { recursive: true, force: true });
 fs.mkdirSync(publicNexus3d, { recursive: true });
 fs.cpSync(dist3dDir, publicNexus3d, { recursive: true });
+
+// Also mirror assets to public/assets so root resolution /assets/... never 404s
+const distAssets = path.join(dist3dDir, 'assets');
+if (fs.existsSync(distAssets)) {
+  fs.mkdirSync(publicAssets, { recursive: true });
+  fs.cpSync(distAssets, publicAssets, { recursive: true });
+}
 
 console.log('✅ Nexus 3D Tech Hub synced successfully!');
