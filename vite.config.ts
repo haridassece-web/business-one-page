@@ -93,7 +93,7 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
   const bodyEnd = config.customScripts?.bodyEnd ?? ''
   const robotsTxt = config.robots?.index === false 
     ? 'User-agent: *\nDisallow: /\n' 
-    : 'User-agent: *\nAllow: /\nSitemap: https://nexuscreative.site/sitemap.xml\n'
+    : 'User-agent: *\nAllow: /\nAllow: /3d-hub/\nAllow: /nexus-creative-3d/\nSitemap: https://www.nexuscreative.site/sitemap.xml\n'
 
   return {
     name: 'figma-site-configuration',

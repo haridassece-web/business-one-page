@@ -2298,7 +2298,7 @@ export default function App() {
             <div className="mt-8 text-center text-xs font-mono text-cyan-400 flex items-center justify-center gap-2">
               <span>🌐</span>
               <a
-                href="https://nexuscreative.site"
+                href="https://www.nexuscreative.site"
                 className="hover:underline tracking-widest uppercase font-semibold"
               >
                 www.nexuscreative.site

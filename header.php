@@ -22,7 +22,7 @@
 <meta name="geo.placename" content="Chennai">
 <meta name="geo.position" content="13.0645;80.1345">
 <meta name="ICBM" content="13.0645, 80.1345">
-<link rel="canonical" href="https://nexuscreative.site/">
+<link rel="canonical" href="https://www.nexuscreative.site/">
 
 <?php wp_head(); ?>
 <!-- Google tag (gtag.js) -->
